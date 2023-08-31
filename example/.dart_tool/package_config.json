@@ -74,6 +74,12 @@
       "languageVersion": "2.12"
     },
     {
+      "name": "ffi",
+      "rootUri": "file:///Users/11283991/.pub-cache/hosted/pub.dev/ffi-2.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
       "name": "file",
       "rootUri": "file:///Users/11283991/.pub-cache/hosted/pub.dev/file-6.1.4",
       "packageUri": "lib/",
@@ -143,7 +149,7 @@
       "name": "lazysodium",
       "rootUri": "../../",
       "packageUri": "lib/",
-      "languageVersion": "3.1"
+      "languageVersion": "2.18"
     },
     {
       "name": "lints",
@@ -356,7 +362,7 @@
       "languageVersion": "3.1"
     }
   ],
-  "generated": "2023-08-31T13:31:21.525302Z",
+  "generated": "2023-08-31T16:51:44.259165Z",
   "generator": "pub",
   "generatorVersion": "3.1.0"
 }
