@@ -1,14 +1,15 @@
 use libc::{c_char, c_uchar};
-use libsodium_sys::{crypto_box_BEFORENMBYTES, crypto_kx_PUBLICKEYBYTES, crypto_kx_SECRETKEYBYTES, crypto_kx_SESSIONKEYBYTES};
+use libsodium_sys::{crypto_box_BEFORENMBYTES, crypto_kx_PUBLICKEYBYTES, crypto_kx_SECRETKEYBYTES, crypto_kx_SESSIONKEYBYTES, crypto_secretbox_NONCEBYTES};
 
-pub const CRYPTO_KX_PK_BYTE_SIZE: usize = crypto_kx_PUBLICKEYBYTES as usize;
-pub const CRYPTO_KX_SK_BYTE_SIZE: usize = crypto_kx_SECRETKEYBYTES as usize;
-pub const CRYPTO_KX_PK_HEX_SIZE: usize = CRYPTO_KX_PK_BYTE_SIZE * 2;
-pub const CRYPTO_KX_SK_HEX_SIZE: usize = CRYPTO_KX_SK_BYTE_SIZE * 2;
-pub const CRYPTO_KX_SESSION_KEY_BYTE_SIZE: usize = crypto_kx_SESSIONKEYBYTES as usize;
-pub const CRYPTO_NONCE_BYTE_SIZE: usize = 24;
-pub const CRYPTO_NONCE_HEX_SIZE: usize = 48;
-pub const CRYPTO_BOX_BEFORE_NM_BYTE_SIZE: usize = crypto_box_BEFORENMBYTES as usize;
+pub const CRYPTO_KX_PK_BYTES: usize = crypto_kx_PUBLICKEYBYTES as usize;
+pub const CRYPTO_KX_SK_BYTES: usize = crypto_kx_SECRETKEYBYTES as usize;
+pub const CRYPTO_KX_PK_HEX: usize = CRYPTO_KX_PK_BYTES * 2;
+pub const CRYPTO_KX_SK_HEX: usize = CRYPTO_KX_SK_BYTES * 2;
+pub const CRYPTO_KX_SESSION_KEY_BYTES: usize = crypto_kx_SESSIONKEYBYTES as usize;
+pub const CRYPTO_NONCE_BYTES: usize = 24;
+pub const CRYPTO_NONCE_HEX: usize = 48;
+pub const CRYPTO_BOX_BEFORE_NM_BYTES: usize = crypto_box_BEFORENMBYTES as usize;
+pub const CRYPTO_SECRET_BOX_NONCE_BYTES: usize = crypto_secretbox_NONCEBYTES as usize;
 
 #[derive(Debug)]
 pub struct KeyPair {
@@ -30,8 +31,8 @@ pub struct SessionKey {
 }
 
 pub fn crypto_kx_keypair() -> KeyPair {
-    let mut pk: [u8; CRYPTO_KX_PK_BYTE_SIZE] = [0; CRYPTO_KX_PK_BYTE_SIZE];
-    let mut sk: [u8; CRYPTO_KX_SK_BYTE_SIZE] = [0; CRYPTO_KX_SK_BYTE_SIZE];
+    let mut pk: [u8; CRYPTO_KX_PK_BYTES] = [0; CRYPTO_KX_PK_BYTES];
+    let mut sk: [u8; CRYPTO_KX_SK_BYTES] = [0; CRYPTO_KX_SK_BYTES];
 
     unsafe {
         libsodium_sys::crypto_kx_keypair(pk.as_mut_ptr(), sk.as_mut_ptr());
@@ -45,7 +46,7 @@ pub fn crypto_kx_keypair() -> KeyPair {
 
 pub fn crypto_box_beforenm(keypair: KeyPair) -> Vec<u8> {
     // Create a mutable vector to store the shared secret key (precomputed)
-    let mut shared_key: Vec<u8> = vec![0; CRYPTO_BOX_BEFORE_NM_BYTE_SIZE];
+    let mut shared_key: Vec<u8> = vec![0; CRYPTO_BOX_BEFORE_NM_BYTES];
 
     // Call crypto_box_beforenm to compute the shared secret key
     let result = unsafe {
@@ -131,6 +132,26 @@ pub fn crypto_kx_server_session_keys(
     }
 }
 
+pub fn crypto_stream_chacha20_xor(
+    ciphertext: &mut Vec<u8>,
+    message: Vec<u8>,
+    nonce: Vec<u8>,
+    key: Vec<u8>,
+) -> bool {
+    // Call crypto_stream_chacha20_xor to encrypt the message
+    let result = unsafe {
+        libsodium_sys::crypto_stream_chacha20_xor(
+            ciphertext.as_mut_ptr(),
+            message.as_ptr(),
+            message.len() as libc::c_ulonglong,
+            nonce.as_ptr(),
+            key.as_ptr(),
+        )
+    };
+
+    return result == 0;
+}
+
 pub fn bin_to_hex(data: Vec<u8>) -> String {
     let len = data.len();
     let mut hex_output: Vec<c_char> = vec![0; 2 * len + 1];
@@ -200,12 +221,12 @@ pub fn random_bytes_buf(size: usize) -> Vec<u8> {
 }
 
 pub fn random_nonce_bytes() -> Vec<u8> {
-    let bytes = random_bytes_buf(CRYPTO_NONCE_BYTE_SIZE);
+    let bytes = random_bytes_buf(CRYPTO_NONCE_BYTES);
     return bytes;
 }
 
 pub fn random_nonce_hex() -> String {
-    let bytes = random_bytes_buf(CRYPTO_NONCE_BYTE_SIZE);
+    let bytes = random_bytes_buf(CRYPTO_NONCE_BYTES);
     let hex = bin_to_hex(bytes);
     return hex;
 }
@@ -237,8 +258,8 @@ mod tests {
         let sk_hex = bin_to_hex(sk);
         println!("{:?}", &pk_hex);
         println!("{:?}", &sk_hex);
-        assert_eq!(pk_hex.len(), CRYPTO_KX_PK_HEX_SIZE);
-        assert_eq!(sk_hex.len(), CRYPTO_KX_SK_HEX_SIZE);
+        assert_eq!(pk_hex.len(), CRYPTO_KX_PK_HEX);
+        assert_eq!(sk_hex.len(), CRYPTO_KX_SK_HEX);
     }
 
     #[test]
@@ -305,13 +326,13 @@ mod tests {
 
     #[test]
     fn test_random_bytes_buf() {
-        let bytes = random_bytes_buf(CRYPTO_NONCE_BYTE_SIZE);
+        let bytes = random_bytes_buf(CRYPTO_NONCE_BYTES);
         let nonce_hex = bin_to_hex(bytes.clone());
         println!("{:?}", &bytes.len());
         println!("{:?}", &bytes);
         println!("{:?}", &nonce_hex);
         println!("{:?}", &nonce_hex.len());
-        assert_eq!(bytes.len(), CRYPTO_NONCE_BYTE_SIZE)
+        assert_eq!(bytes.len(), CRYPTO_NONCE_BYTES)
     }
 
     #[test]
@@ -319,7 +340,7 @@ mod tests {
         let bytes = random_nonce_bytes();
         println!("{:?}", &bytes.len());
         println!("{:?}", &bytes);
-        assert_eq!(bytes.len(), CRYPTO_NONCE_BYTE_SIZE)
+        assert_eq!(bytes.len(), CRYPTO_NONCE_BYTES)
     }
 
     #[test]
@@ -327,6 +348,35 @@ mod tests {
         let hex = random_nonce_hex();
         println!("{:?}", &hex.len());
         println!("{:?}", &hex);
-        assert_eq!(hex.len(), CRYPTO_NONCE_HEX_SIZE)
+        assert_eq!(hex.len(), CRYPTO_NONCE_HEX);
+    }
+
+    #[test]
+    fn test_crypto_stream_chacha20_xor_encrypt_and_decrypt() {
+        let nonce_hex = "4e1600e28682d0226f9fcb50f82fd23c498ce4c4a738e2de".to_string();
+        let nonce = hex_to_bin(nonce_hex);
+        let server_shared_key_hex = "232d2af723a8947bd536f9766139b4cd2ea79074693b6e2a60445a6996ce45ed".to_string();
+        let client_shared_key_hex = "232d2af723a8947bd536f9766139b4cd2ea79074693b6e2a60445a6996ce45ed".to_string();
+        let server_shared_key = hex_to_bin(server_shared_key_hex);
+        let client_shared_key = hex_to_bin(client_shared_key_hex);
+
+        let message = "Lazysodium";
+        let message_byte = message.as_bytes().to_vec();
+
+        // Encrypt
+        let mut cipher_byte: Vec<u8> = vec![0; message_byte.len()];
+        let result = crypto_stream_chacha20_xor(&mut cipher_byte, message_byte, nonce.clone(), server_shared_key);
+        let cipher_hex = bin_to_hex(cipher_byte.to_vec());
+        println!("{}", result);
+        println!("{}", &cipher_hex);
+        assert_eq!(cipher_hex, "8abd28d7a98c233cf8a8");
+
+        // Decrypt
+        let mut plain_byte: Vec<u8> = vec![0; cipher_byte.len()];
+        let result = crypto_stream_chacha20_xor(&mut plain_byte, cipher_byte, nonce.clone(), client_shared_key);
+        let plaintext = String::from_utf8(plain_byte).unwrap();
+        println!("{}", result);
+        println!("{}", &plaintext);
+        assert_eq!(plaintext, message);
     }
 }
