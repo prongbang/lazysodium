@@ -1,7 +1,6 @@
 use libc::{c_char, c_uchar};
 use libsodium_sys::{crypto_aead_aes256gcm_KEYBYTES, crypto_aead_chacha20poly1305_ietf_KEYBYTES, crypto_aead_chacha20poly1305_IETF_KEYBYTES, crypto_aead_chacha20poly1305_KEYBYTES, crypto_aead_xchacha20poly1305_ietf_KEYBYTES, crypto_auth_hmacsha512_KEYBYTES, crypto_box_BEFORENMBYTES, crypto_box_curve25519xsalsa20poly1305_PUBLICKEYBYTES, crypto_box_curve25519xsalsa20poly1305_SECRETKEYBYTES, crypto_box_PUBLICKEYBYTES, crypto_box_SECRETKEYBYTES, crypto_kx_PUBLICKEYBYTES, crypto_kx_SECRETKEYBYTES, crypto_kx_SESSIONKEYBYTES, crypto_secretbox_KEYBYTES, crypto_secretbox_NONCEBYTES, crypto_secretbox_xchacha20poly1305_KEYBYTES, crypto_secretbox_xchacha20poly1305_MACBYTES, crypto_secretbox_xchacha20poly1305_NONCEBYTES, crypto_secretstream_xchacha20poly1305_KEYBYTES, crypto_stream_chacha20_ietf_KEYBYTES, crypto_stream_chacha20_ietf_NONCEBYTES, crypto_stream_chacha20_KEYBYTES, crypto_stream_chacha20_NONCEBYTES, crypto_stream_KEYBYTES, crypto_stream_NONCEBYTES, crypto_stream_xchacha20_KEYBYTES, crypto_stream_xchacha20_NONCEBYTES, crypto_stream_xsalsa20_KEYBYTES};
 
-pub const CRYPTO_KX_BYTES: usize = 32;
 pub const CRYPTO_KX_PK_BYTES: usize = crypto_kx_PUBLICKEYBYTES as usize;
 pub const CRYPTO_KX_SK_BYTES: usize = crypto_kx_SECRETKEYBYTES as usize;
 pub const CRYPTO_KX_PK_HEX: usize = CRYPTO_KX_PK_BYTES * 2;
@@ -54,9 +53,9 @@ pub struct SessionKey {
     pub tx: Vec<u8>,
 }
 
-pub fn crypto_kx_keypair(size: usize) -> KeyPair {
-    let mut pk: Vec<u8> = vec![0; size];
-    let mut sk: Vec<u8> = vec![0; size];
+pub fn crypto_kx_keypair(pk_size: usize, sk_size: usize) -> KeyPair {
+    let mut pk: Vec<u8> = vec![0; pk_size];
+    let mut sk: Vec<u8> = vec![0; sk_size];
 
     unsafe {
         libsodium_sys::crypto_kx_keypair(pk.as_mut_ptr(), sk.as_mut_ptr());
@@ -157,15 +156,16 @@ pub fn crypto_kx_server_session_keys(
 }
 
 pub fn crypto_stream_chacha20_xor(
-    ciphertext: &mut Vec<u8>,
     message: Vec<u8>,
     nonce: Vec<u8>,
     key: Vec<u8>,
-) -> bool {
+) -> Vec<u8> {
+    let message_size = message.len();
+    let mut output: Vec<u8> = vec![0; message_size];
     // Call crypto_stream_chacha20_xor to encrypt the message
     let result = unsafe {
         libsodium_sys::crypto_stream_chacha20_xor(
-            ciphertext.as_mut_ptr(),
+            output.as_mut_ptr(),
             message.as_ptr(),
             message.len() as libc::c_ulonglong,
             nonce.as_ptr(),
@@ -173,7 +173,11 @@ pub fn crypto_stream_chacha20_xor(
         )
     };
 
-    return result == 0;
+    if result == 0 {
+        return output;
+    }
+
+    return vec![];
 }
 
 pub fn crypto_aead_chacha20poly1305_encrypt(
@@ -302,7 +306,7 @@ mod tests {
 
     #[test]
     fn test_gen_keypair() {
-        let keypair = crypto_kx_keypair(CRYPTO_KX_BYTES);
+        let keypair = crypto_kx_keypair(CRYPTO_KX_PK_BYTES, CRYPTO_KX_SK_BYTES);
         println!("{:?}", &keypair.pk.len());
         println!("{:?}", &keypair.sk.len());
         println!("{:?}", &keypair);
@@ -310,7 +314,7 @@ mod tests {
 
     #[test]
     fn test_bin_to_hex() {
-        let keypair = crypto_kx_keypair(CRYPTO_KX_BYTES);
+        let keypair = crypto_kx_keypair(CRYPTO_KX_PK_BYTES, CRYPTO_KX_SK_BYTES);
         let pk = keypair.pk;
         let sk = keypair.sk;
         let pk_hex = bin_to_hex(pk);
@@ -339,8 +343,8 @@ mod tests {
 
     #[test]
     fn test_crypto_box_beforenm() {
-        let client_keypair = crypto_kx_keypair(CRYPTO_KX_BYTES);
-        let server_keypair = crypto_kx_keypair(CRYPTO_KX_BYTES);
+        let client_keypair = crypto_kx_keypair(CRYPTO_KX_PK_BYTES, CRYPTO_KX_SK_BYTES);
+        let server_keypair = crypto_kx_keypair(CRYPTO_KX_PK_BYTES, CRYPTO_KX_SK_BYTES);
         let kx_server_shared_key = KeyPair {
             pk: client_keypair.pk,
             sk: server_keypair.sk,
@@ -360,8 +364,8 @@ mod tests {
 
     #[test]
     fn test_crypto_kx_client_and_server_session_keys() {
-        let client_keypair = crypto_kx_keypair(CRYPTO_KX_BYTES);
-        let server_keypair = crypto_kx_keypair(CRYPTO_KX_BYTES);
+        let client_keypair = crypto_kx_keypair(CRYPTO_KX_PK_BYTES, CRYPTO_KX_SK_BYTES);
+        let server_keypair = crypto_kx_keypair(CRYPTO_KX_PK_BYTES, CRYPTO_KX_SK_BYTES);
 
         let kx_client_session_key = crypto_kx_client_session_keys(
             client_keypair.pk.clone(),
@@ -423,18 +427,14 @@ mod tests {
         let message_byte = message.as_bytes().to_vec();
 
         // Encrypt
-        let mut cipher_byte: Vec<u8> = vec![0; message_byte.len()];
-        let result = crypto_stream_chacha20_xor(&mut cipher_byte, message_byte, nonce.clone(), server_shared_key);
+        let cipher_byte = crypto_stream_chacha20_xor(message_byte, nonce.clone(), server_shared_key);
         let cipher_hex = bin_to_hex(cipher_byte.to_vec());
-        println!("{}", result);
         println!("{}", &cipher_hex);
         assert_eq!(cipher_hex, "8abd28d7a98c233cf8a8");
 
         // Decrypt
-        let mut plain_byte: Vec<u8> = vec![0; cipher_byte.len()];
-        let result = crypto_stream_chacha20_xor(&mut plain_byte, cipher_byte, nonce.clone(), client_shared_key);
+        let plain_byte = crypto_stream_chacha20_xor(cipher_byte, nonce.clone(), client_shared_key);
         let plaintext = String::from_utf8(plain_byte).unwrap();
-        println!("{}", result);
         println!("{}", &plaintext);
         assert_eq!(plaintext, message);
     }
