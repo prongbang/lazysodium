@@ -50,11 +50,22 @@ pub extern "C" fn wire_crypto_stream_chacha20_xor(
 pub extern "C" fn wire_crypto_aead_chacha20poly1305_encrypt(
     port_: i64,
     message: *mut wire_uint_8_list,
-    additional_data: *mut wire_uint_8_list,
     nonce: *mut wire_uint_8_list,
     key: *mut wire_uint_8_list,
+    additional_data: *mut wire_uint_8_list,
 ) {
-    wire_crypto_aead_chacha20poly1305_encrypt_impl(port_, message, additional_data, nonce, key)
+    wire_crypto_aead_chacha20poly1305_encrypt_impl(port_, message, nonce, key, additional_data)
+}
+
+#[no_mangle]
+pub extern "C" fn wire_crypto_aead_chacha20poly1305_decrypt(
+    port_: i64,
+    ciphertext: *mut wire_uint_8_list,
+    nonce: *mut wire_uint_8_list,
+    key: *mut wire_uint_8_list,
+    additional_data: *mut wire_uint_8_list,
+) {
+    wire_crypto_aead_chacha20poly1305_decrypt_impl(port_, ciphertext, nonce, key, additional_data)
 }
 
 #[no_mangle]

@@ -48,13 +48,23 @@ abstract class Lazysodium {
 
   Future<Uint8List> cryptoAeadChacha20Poly1305Encrypt(
       {required Uint8List message,
-      required Uint8List additionalData,
       required Uint8List nonce,
       required Uint8List key,
+      required Uint8List additionalData,
       dynamic hint});
 
   FlutterRustBridgeTaskConstMeta
       get kCryptoAeadChacha20Poly1305EncryptConstMeta;
+
+  Future<Uint8List> cryptoAeadChacha20Poly1305Decrypt(
+      {required Uint8List ciphertext,
+      required Uint8List nonce,
+      required Uint8List key,
+      required Uint8List additionalData,
+      dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta
+      get kCryptoAeadChacha20Poly1305DecryptConstMeta;
 
   Future<String> binToHex({required Uint8List data, dynamic hint});
 

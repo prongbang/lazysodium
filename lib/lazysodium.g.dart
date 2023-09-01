@@ -157,21 +157,21 @@ class LazysodiumImpl implements Lazysodium {
 
   Future<Uint8List> cryptoAeadChacha20Poly1305Encrypt(
       {required Uint8List message,
-      required Uint8List additionalData,
       required Uint8List nonce,
       required Uint8List key,
+      required Uint8List additionalData,
       dynamic hint}) {
     var arg0 = _platform.api2wire_uint_8_list(message);
-    var arg1 = _platform.api2wire_uint_8_list(additionalData);
-    var arg2 = _platform.api2wire_uint_8_list(nonce);
-    var arg3 = _platform.api2wire_uint_8_list(key);
+    var arg1 = _platform.api2wire_uint_8_list(nonce);
+    var arg2 = _platform.api2wire_uint_8_list(key);
+    var arg3 = _platform.api2wire_uint_8_list(additionalData);
     return _platform.executeNormal(FlutterRustBridgeTask(
       callFfi: (port_) => _platform.inner
           .wire_crypto_aead_chacha20poly1305_encrypt(
               port_, arg0, arg1, arg2, arg3),
       parseSuccessData: _wire2api_uint_8_list,
       constMeta: kCryptoAeadChacha20Poly1305EncryptConstMeta,
-      argValues: [message, additionalData, nonce, key],
+      argValues: [message, nonce, key, additionalData],
       hint: hint,
     ));
   }
@@ -180,7 +180,35 @@ class LazysodiumImpl implements Lazysodium {
       get kCryptoAeadChacha20Poly1305EncryptConstMeta =>
           const FlutterRustBridgeTaskConstMeta(
             debugName: "crypto_aead_chacha20poly1305_encrypt",
-            argNames: ["message", "additionalData", "nonce", "key"],
+            argNames: ["message", "nonce", "key", "additionalData"],
+          );
+
+  Future<Uint8List> cryptoAeadChacha20Poly1305Decrypt(
+      {required Uint8List ciphertext,
+      required Uint8List nonce,
+      required Uint8List key,
+      required Uint8List additionalData,
+      dynamic hint}) {
+    var arg0 = _platform.api2wire_uint_8_list(ciphertext);
+    var arg1 = _platform.api2wire_uint_8_list(nonce);
+    var arg2 = _platform.api2wire_uint_8_list(key);
+    var arg3 = _platform.api2wire_uint_8_list(additionalData);
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) => _platform.inner
+          .wire_crypto_aead_chacha20poly1305_decrypt(
+              port_, arg0, arg1, arg2, arg3),
+      parseSuccessData: _wire2api_uint_8_list,
+      constMeta: kCryptoAeadChacha20Poly1305DecryptConstMeta,
+      argValues: [ciphertext, nonce, key, additionalData],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta
+      get kCryptoAeadChacha20Poly1305DecryptConstMeta =>
+          const FlutterRustBridgeTaskConstMeta(
+            debugName: "crypto_aead_chacha20poly1305_decrypt",
+            argNames: ["ciphertext", "nonce", "key", "additionalData"],
           );
 
   Future<String> binToHex({required Uint8List data, dynamic hint}) {
@@ -589,16 +617,16 @@ class LazysodiumWire implements FlutterRustBridgeWireBase {
   void wire_crypto_aead_chacha20poly1305_encrypt(
     int port_,
     ffi.Pointer<wire_uint_8_list> message,
-    ffi.Pointer<wire_uint_8_list> additional_data,
     ffi.Pointer<wire_uint_8_list> nonce,
     ffi.Pointer<wire_uint_8_list> key,
+    ffi.Pointer<wire_uint_8_list> additional_data,
   ) {
     return _wire_crypto_aead_chacha20poly1305_encrypt(
       port_,
       message,
-      additional_data,
       nonce,
       key,
+      additional_data,
     );
   }
 
@@ -613,6 +641,40 @@ class LazysodiumWire implements FlutterRustBridgeWireBase {
       'wire_crypto_aead_chacha20poly1305_encrypt');
   late final _wire_crypto_aead_chacha20poly1305_encrypt =
       _wire_crypto_aead_chacha20poly1305_encryptPtr.asFunction<
+          void Function(
+              int,
+              ffi.Pointer<wire_uint_8_list>,
+              ffi.Pointer<wire_uint_8_list>,
+              ffi.Pointer<wire_uint_8_list>,
+              ffi.Pointer<wire_uint_8_list>)>();
+
+  void wire_crypto_aead_chacha20poly1305_decrypt(
+    int port_,
+    ffi.Pointer<wire_uint_8_list> ciphertext,
+    ffi.Pointer<wire_uint_8_list> nonce,
+    ffi.Pointer<wire_uint_8_list> key,
+    ffi.Pointer<wire_uint_8_list> additional_data,
+  ) {
+    return _wire_crypto_aead_chacha20poly1305_decrypt(
+      port_,
+      ciphertext,
+      nonce,
+      key,
+      additional_data,
+    );
+  }
+
+  late final _wire_crypto_aead_chacha20poly1305_decryptPtr = _lookup<
+          ffi.NativeFunction<
+              ffi.Void Function(
+                  ffi.Int64,
+                  ffi.Pointer<wire_uint_8_list>,
+                  ffi.Pointer<wire_uint_8_list>,
+                  ffi.Pointer<wire_uint_8_list>,
+                  ffi.Pointer<wire_uint_8_list>)>>(
+      'wire_crypto_aead_chacha20poly1305_decrypt');
+  late final _wire_crypto_aead_chacha20poly1305_decrypt =
+      _wire_crypto_aead_chacha20poly1305_decryptPtr.asFunction<
           void Function(
               int,
               ffi.Pointer<wire_uint_8_list>,
@@ -738,16 +800,16 @@ class LazysodiumWire implements FlutterRustBridgeWireBase {
       _free_WireSyncReturnPtr.asFunction<void Function(WireSyncReturn)>();
 }
 
-final class _Dart_Handle extends ffi.Opaque {}
+class _Dart_Handle extends ffi.Opaque {}
 
-final class wire_uint_8_list extends ffi.Struct {
+class wire_uint_8_list extends ffi.Struct {
   external ffi.Pointer<ffi.Uint8> ptr;
 
   @ffi.Int32()
   external int len;
 }
 
-final class wire_KeyPair extends ffi.Struct {
+class wire_KeyPair extends ffi.Struct {
   external ffi.Pointer<wire_uint_8_list> pk;
 
   external ffi.Pointer<wire_uint_8_list> sk;

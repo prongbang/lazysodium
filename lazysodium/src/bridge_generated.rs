@@ -144,9 +144,9 @@ fn wire_crypto_stream_chacha20_xor_impl(
 fn wire_crypto_aead_chacha20poly1305_encrypt_impl(
     port_: MessagePort,
     message: impl Wire2Api<Vec<u8>> + UnwindSafe,
-    additional_data: impl Wire2Api<Vec<u8>> + UnwindSafe,
     nonce: impl Wire2Api<Vec<u8>> + UnwindSafe,
     key: impl Wire2Api<Vec<u8>> + UnwindSafe,
+    additional_data: impl Wire2Api<Vec<u8>> + UnwindSafe,
 ) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, Vec<u8>>(
         WrapInfo {
@@ -156,15 +156,44 @@ fn wire_crypto_aead_chacha20poly1305_encrypt_impl(
         },
         move || {
             let api_message = message.wire2api();
-            let api_additional_data = additional_data.wire2api();
             let api_nonce = nonce.wire2api();
             let api_key = key.wire2api();
+            let api_additional_data = additional_data.wire2api();
             move |task_callback| {
                 Ok(crypto_aead_chacha20poly1305_encrypt(
                     api_message,
-                    api_additional_data,
                     api_nonce,
                     api_key,
+                    api_additional_data,
+                ))
+            }
+        },
+    )
+}
+fn wire_crypto_aead_chacha20poly1305_decrypt_impl(
+    port_: MessagePort,
+    ciphertext: impl Wire2Api<Vec<u8>> + UnwindSafe,
+    nonce: impl Wire2Api<Vec<u8>> + UnwindSafe,
+    key: impl Wire2Api<Vec<u8>> + UnwindSafe,
+    additional_data: impl Wire2Api<Vec<u8>> + UnwindSafe,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, Vec<u8>>(
+        WrapInfo {
+            debug_name: "crypto_aead_chacha20poly1305_decrypt",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || {
+            let api_ciphertext = ciphertext.wire2api();
+            let api_nonce = nonce.wire2api();
+            let api_key = key.wire2api();
+            let api_additional_data = additional_data.wire2api();
+            move |task_callback| {
+                Ok(crypto_aead_chacha20poly1305_decrypt(
+                    api_ciphertext,
+                    api_nonce,
+                    api_key,
+                    api_additional_data,
                 ))
             }
         },

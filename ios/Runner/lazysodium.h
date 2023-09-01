@@ -19,9 +19,13 @@ typedef struct _Dart_Handle* Dart_Handle;
 
 #define CRYPTO_BOX_SK_KEY_BYTES (uintptr_t)crypto_box_SECRETKEYBYTES
 
-#define CRYPTO_AEAD_AES256GCM_KEY_BYTES (uintptr_t)crypto_aead_aes256gcm_KEYBYTES
-
 #define CRYPTO_AEAD_CHACHA20POLY1305_KEY_BYTES (uintptr_t)crypto_aead_chacha20poly1305_KEYBYTES
+
+#define CRYPTO_AEAD_CHACHA20POLY1305_ABYTES (uintptr_t)crypto_aead_chacha20poly1305_ABYTES
+
+#define CRYPTO_AEAD_CHACHA20POLY1305_NSEC_BYTES (uintptr_t)crypto_aead_chacha20poly1305_NSECBYTES
+
+#define CRYPTO_AEAD_CHACHA20POLY1305_NPUB_BYTES (uintptr_t)crypto_aead_chacha20poly1305_NPUBBYTES
 
 #define CRYPTO_AEAD_CHACHA20POLY1305_IETF_KEY_BYTES (uintptr_t)crypto_aead_chacha20poly1305_ietf_KEYBYTES
 
@@ -118,9 +122,15 @@ void wire_crypto_stream_chacha20_xor(int64_t port_,
 
 void wire_crypto_aead_chacha20poly1305_encrypt(int64_t port_,
                                                struct wire_uint_8_list *message,
-                                               struct wire_uint_8_list *additional_data,
                                                struct wire_uint_8_list *nonce,
-                                               struct wire_uint_8_list *key);
+                                               struct wire_uint_8_list *key,
+                                               struct wire_uint_8_list *additional_data);
+
+void wire_crypto_aead_chacha20poly1305_decrypt(int64_t port_,
+                                               struct wire_uint_8_list *ciphertext,
+                                               struct wire_uint_8_list *nonce,
+                                               struct wire_uint_8_list *key,
+                                               struct wire_uint_8_list *additional_data);
 
 void wire_bin_to_hex(int64_t port_, struct wire_uint_8_list *data);
 
@@ -147,6 +157,7 @@ static int64_t dummy_method_to_enforce_bundling(void) {
     dummy_var ^= ((int64_t) (void*) wire_crypto_kx_server_session_keys);
     dummy_var ^= ((int64_t) (void*) wire_crypto_stream_chacha20_xor);
     dummy_var ^= ((int64_t) (void*) wire_crypto_aead_chacha20poly1305_encrypt);
+    dummy_var ^= ((int64_t) (void*) wire_crypto_aead_chacha20poly1305_decrypt);
     dummy_var ^= ((int64_t) (void*) wire_bin_to_hex);
     dummy_var ^= ((int64_t) (void*) wire_hex_to_bin);
     dummy_var ^= ((int64_t) (void*) wire_random_bytes_buf);
