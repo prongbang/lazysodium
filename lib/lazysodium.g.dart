@@ -26,21 +26,162 @@ class LazysodiumImpl implements Lazysodium {
   factory LazysodiumImpl.wasm(FutureOr<WasmModule> module) =>
       LazysodiumImpl(module as ExternalLibrary);
   LazysodiumImpl.raw(this._platform);
-  Future<KeyPair> genKeypair({dynamic hint}) {
+  Future<KeyPair> cryptoKxKeypair(
+      {required int pkSize, required int skSize, dynamic hint}) {
+    var arg0 = api2wire_usize(pkSize);
+    var arg1 = api2wire_usize(skSize);
     return _platform.executeNormal(FlutterRustBridgeTask(
-      callFfi: (port_) => _platform.inner.wire_gen_keypair(port_),
+      callFfi: (port_) =>
+          _platform.inner.wire_crypto_kx_keypair(port_, arg0, arg1),
       parseSuccessData: _wire2api_key_pair,
-      constMeta: kGenKeypairConstMeta,
-      argValues: [],
+      constMeta: kCryptoKxKeypairConstMeta,
+      argValues: [pkSize, skSize],
       hint: hint,
     ));
   }
 
-  FlutterRustBridgeTaskConstMeta get kGenKeypairConstMeta =>
+  FlutterRustBridgeTaskConstMeta get kCryptoKxKeypairConstMeta =>
       const FlutterRustBridgeTaskConstMeta(
-        debugName: "gen_keypair",
-        argNames: [],
+        debugName: "crypto_kx_keypair",
+        argNames: ["pkSize", "skSize"],
       );
+
+  Future<Uint8List> cryptoBoxBeforenm(
+      {required KeyPair keypair, dynamic hint}) {
+    var arg0 = _platform.api2wire_box_autoadd_key_pair(keypair);
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) => _platform.inner.wire_crypto_box_beforenm(port_, arg0),
+      parseSuccessData: _wire2api_uint_8_list,
+      constMeta: kCryptoBoxBeforenmConstMeta,
+      argValues: [keypair],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kCryptoBoxBeforenmConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "crypto_box_beforenm",
+        argNames: ["keypair"],
+      );
+
+  Future<String> cryptoBoxBeforenmHex(
+      {required KeyPair keypair, dynamic hint}) {
+    var arg0 = _platform.api2wire_box_autoadd_key_pair(keypair);
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) =>
+          _platform.inner.wire_crypto_box_beforenm_hex(port_, arg0),
+      parseSuccessData: _wire2api_String,
+      constMeta: kCryptoBoxBeforenmHexConstMeta,
+      argValues: [keypair],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kCryptoBoxBeforenmHexConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "crypto_box_beforenm_hex",
+        argNames: ["keypair"],
+      );
+
+  Future<SessionKey> cryptoKxClientSessionKeys(
+      {required Uint8List clientPk,
+      required Uint8List clientSk,
+      required Uint8List serverPk,
+      dynamic hint}) {
+    var arg0 = _platform.api2wire_uint_8_list(clientPk);
+    var arg1 = _platform.api2wire_uint_8_list(clientSk);
+    var arg2 = _platform.api2wire_uint_8_list(serverPk);
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) => _platform.inner
+          .wire_crypto_kx_client_session_keys(port_, arg0, arg1, arg2),
+      parseSuccessData: _wire2api_session_key,
+      constMeta: kCryptoKxClientSessionKeysConstMeta,
+      argValues: [clientPk, clientSk, serverPk],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kCryptoKxClientSessionKeysConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "crypto_kx_client_session_keys",
+        argNames: ["clientPk", "clientSk", "serverPk"],
+      );
+
+  Future<SessionKey> cryptoKxServerSessionKeys(
+      {required Uint8List serverPk,
+      required Uint8List serverSk,
+      required Uint8List clientPk,
+      dynamic hint}) {
+    var arg0 = _platform.api2wire_uint_8_list(serverPk);
+    var arg1 = _platform.api2wire_uint_8_list(serverSk);
+    var arg2 = _platform.api2wire_uint_8_list(clientPk);
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) => _platform.inner
+          .wire_crypto_kx_server_session_keys(port_, arg0, arg1, arg2),
+      parseSuccessData: _wire2api_session_key,
+      constMeta: kCryptoKxServerSessionKeysConstMeta,
+      argValues: [serverPk, serverSk, clientPk],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kCryptoKxServerSessionKeysConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "crypto_kx_server_session_keys",
+        argNames: ["serverPk", "serverSk", "clientPk"],
+      );
+
+  Future<Uint8List> cryptoStreamChacha20Xor(
+      {required Uint8List message,
+      required Uint8List nonce,
+      required Uint8List key,
+      dynamic hint}) {
+    var arg0 = _platform.api2wire_uint_8_list(message);
+    var arg1 = _platform.api2wire_uint_8_list(nonce);
+    var arg2 = _platform.api2wire_uint_8_list(key);
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) => _platform.inner
+          .wire_crypto_stream_chacha20_xor(port_, arg0, arg1, arg2),
+      parseSuccessData: _wire2api_uint_8_list,
+      constMeta: kCryptoStreamChacha20XorConstMeta,
+      argValues: [message, nonce, key],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kCryptoStreamChacha20XorConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "crypto_stream_chacha20_xor",
+        argNames: ["message", "nonce", "key"],
+      );
+
+  Future<Uint8List> cryptoAeadChacha20Poly1305Encrypt(
+      {required Uint8List message,
+      required Uint8List additionalData,
+      required Uint8List nonce,
+      required Uint8List key,
+      dynamic hint}) {
+    var arg0 = _platform.api2wire_uint_8_list(message);
+    var arg1 = _platform.api2wire_uint_8_list(additionalData);
+    var arg2 = _platform.api2wire_uint_8_list(nonce);
+    var arg3 = _platform.api2wire_uint_8_list(key);
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) => _platform.inner
+          .wire_crypto_aead_chacha20poly1305_encrypt(
+              port_, arg0, arg1, arg2, arg3),
+      parseSuccessData: _wire2api_uint_8_list,
+      constMeta: kCryptoAeadChacha20Poly1305EncryptConstMeta,
+      argValues: [message, additionalData, nonce, key],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta
+      get kCryptoAeadChacha20Poly1305EncryptConstMeta =>
+          const FlutterRustBridgeTaskConstMeta(
+            debugName: "crypto_aead_chacha20poly1305_encrypt",
+            argNames: ["message", "additionalData", "nonce", "key"],
+          );
 
   Future<String> binToHex({required Uint8List data, dynamic hint}) {
     var arg0 = _platform.api2wire_uint_8_list(data);
@@ -76,6 +217,55 @@ class LazysodiumImpl implements Lazysodium {
         argNames: ["hex"],
       );
 
+  Future<Uint8List> randomBytesBuf({required int size, dynamic hint}) {
+    var arg0 = api2wire_usize(size);
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) => _platform.inner.wire_random_bytes_buf(port_, arg0),
+      parseSuccessData: _wire2api_uint_8_list,
+      constMeta: kRandomBytesBufConstMeta,
+      argValues: [size],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kRandomBytesBufConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "random_bytes_buf",
+        argNames: ["size"],
+      );
+
+  Future<Uint8List> randomNonceBytes({dynamic hint}) {
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) => _platform.inner.wire_random_nonce_bytes(port_),
+      parseSuccessData: _wire2api_uint_8_list,
+      constMeta: kRandomNonceBytesConstMeta,
+      argValues: [],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kRandomNonceBytesConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "random_nonce_bytes",
+        argNames: [],
+      );
+
+  Future<String> randomNonceHex({dynamic hint}) {
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) => _platform.inner.wire_random_nonce_hex(port_),
+      parseSuccessData: _wire2api_String,
+      constMeta: kRandomNonceHexConstMeta,
+      argValues: [],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kRandomNonceHexConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "random_nonce_hex",
+        argNames: [],
+      );
+
   void dispose() {
     _platform.dispose();
   }
@@ -95,6 +285,16 @@ class LazysodiumImpl implements Lazysodium {
     );
   }
 
+  SessionKey _wire2api_session_key(dynamic raw) {
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return SessionKey(
+      rx: _wire2api_uint_8_list(arr[0]),
+      tx: _wire2api_uint_8_list(arr[1]),
+    );
+  }
+
   int _wire2api_u8(dynamic raw) {
     return raw as int;
   }
@@ -111,6 +311,10 @@ int api2wire_u8(int raw) {
   return raw;
 }
 
+@protected
+int api2wire_usize(int raw) {
+  return raw;
+}
 // Section: finalizer
 
 class LazysodiumPlatform extends FlutterRustBridgeBase<LazysodiumWire> {
@@ -124,14 +328,32 @@ class LazysodiumPlatform extends FlutterRustBridgeBase<LazysodiumWire> {
   }
 
   @protected
+  ffi.Pointer<wire_KeyPair> api2wire_box_autoadd_key_pair(KeyPair raw) {
+    final ptr = inner.new_box_autoadd_key_pair_0();
+    _api_fill_to_wire_key_pair(raw, ptr.ref);
+    return ptr;
+  }
+
+  @protected
   ffi.Pointer<wire_uint_8_list> api2wire_uint_8_list(Uint8List raw) {
     final ans = inner.new_uint_8_list_0(raw.length);
     ans.ref.ptr.asTypedList(raw.length).setAll(0, raw);
     return ans;
   }
+
 // Section: finalizer
 
 // Section: api_fill_to_wire
+
+  void _api_fill_to_wire_box_autoadd_key_pair(
+      KeyPair apiObj, ffi.Pointer<wire_KeyPair> wireObj) {
+    _api_fill_to_wire_key_pair(apiObj, wireObj.ref);
+  }
+
+  void _api_fill_to_wire_key_pair(KeyPair apiObj, wire_KeyPair wireObj) {
+    wireObj.pk = api2wire_uint_8_list(apiObj.pk);
+    wireObj.sk = api2wire_uint_8_list(apiObj.sk);
+  }
 }
 
 // ignore_for_file: camel_case_types, non_constant_identifier_names, avoid_positional_boolean_parameters, annotate_overrides, constant_identifier_names
@@ -230,19 +452,173 @@ class LazysodiumWire implements FlutterRustBridgeWireBase {
   late final _init_frb_dart_api_dl = _init_frb_dart_api_dlPtr
       .asFunction<int Function(ffi.Pointer<ffi.Void>)>();
 
-  void wire_gen_keypair(
+  void wire_crypto_kx_keypair(
     int port_,
+    int pk_size,
+    int sk_size,
   ) {
-    return _wire_gen_keypair(
+    return _wire_crypto_kx_keypair(
       port_,
+      pk_size,
+      sk_size,
     );
   }
 
-  late final _wire_gen_keypairPtr =
-      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
-          'wire_gen_keypair');
-  late final _wire_gen_keypair =
-      _wire_gen_keypairPtr.asFunction<void Function(int)>();
+  late final _wire_crypto_kx_keypairPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(
+              ffi.Int64, ffi.UintPtr, ffi.UintPtr)>>('wire_crypto_kx_keypair');
+  late final _wire_crypto_kx_keypair =
+      _wire_crypto_kx_keypairPtr.asFunction<void Function(int, int, int)>();
+
+  void wire_crypto_box_beforenm(
+    int port_,
+    ffi.Pointer<wire_KeyPair> keypair,
+  ) {
+    return _wire_crypto_box_beforenm(
+      port_,
+      keypair,
+    );
+  }
+
+  late final _wire_crypto_box_beforenmPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(ffi.Int64,
+              ffi.Pointer<wire_KeyPair>)>>('wire_crypto_box_beforenm');
+  late final _wire_crypto_box_beforenm = _wire_crypto_box_beforenmPtr
+      .asFunction<void Function(int, ffi.Pointer<wire_KeyPair>)>();
+
+  void wire_crypto_box_beforenm_hex(
+    int port_,
+    ffi.Pointer<wire_KeyPair> keypair,
+  ) {
+    return _wire_crypto_box_beforenm_hex(
+      port_,
+      keypair,
+    );
+  }
+
+  late final _wire_crypto_box_beforenm_hexPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(ffi.Int64,
+              ffi.Pointer<wire_KeyPair>)>>('wire_crypto_box_beforenm_hex');
+  late final _wire_crypto_box_beforenm_hex = _wire_crypto_box_beforenm_hexPtr
+      .asFunction<void Function(int, ffi.Pointer<wire_KeyPair>)>();
+
+  void wire_crypto_kx_client_session_keys(
+    int port_,
+    ffi.Pointer<wire_uint_8_list> client_pk,
+    ffi.Pointer<wire_uint_8_list> client_sk,
+    ffi.Pointer<wire_uint_8_list> server_pk,
+  ) {
+    return _wire_crypto_kx_client_session_keys(
+      port_,
+      client_pk,
+      client_sk,
+      server_pk,
+    );
+  }
+
+  late final _wire_crypto_kx_client_session_keysPtr = _lookup<
+          ffi.NativeFunction<
+              ffi.Void Function(
+                  ffi.Int64,
+                  ffi.Pointer<wire_uint_8_list>,
+                  ffi.Pointer<wire_uint_8_list>,
+                  ffi.Pointer<wire_uint_8_list>)>>(
+      'wire_crypto_kx_client_session_keys');
+  late final _wire_crypto_kx_client_session_keys =
+      _wire_crypto_kx_client_session_keysPtr.asFunction<
+          void Function(int, ffi.Pointer<wire_uint_8_list>,
+              ffi.Pointer<wire_uint_8_list>, ffi.Pointer<wire_uint_8_list>)>();
+
+  void wire_crypto_kx_server_session_keys(
+    int port_,
+    ffi.Pointer<wire_uint_8_list> server_pk,
+    ffi.Pointer<wire_uint_8_list> server_sk,
+    ffi.Pointer<wire_uint_8_list> client_pk,
+  ) {
+    return _wire_crypto_kx_server_session_keys(
+      port_,
+      server_pk,
+      server_sk,
+      client_pk,
+    );
+  }
+
+  late final _wire_crypto_kx_server_session_keysPtr = _lookup<
+          ffi.NativeFunction<
+              ffi.Void Function(
+                  ffi.Int64,
+                  ffi.Pointer<wire_uint_8_list>,
+                  ffi.Pointer<wire_uint_8_list>,
+                  ffi.Pointer<wire_uint_8_list>)>>(
+      'wire_crypto_kx_server_session_keys');
+  late final _wire_crypto_kx_server_session_keys =
+      _wire_crypto_kx_server_session_keysPtr.asFunction<
+          void Function(int, ffi.Pointer<wire_uint_8_list>,
+              ffi.Pointer<wire_uint_8_list>, ffi.Pointer<wire_uint_8_list>)>();
+
+  void wire_crypto_stream_chacha20_xor(
+    int port_,
+    ffi.Pointer<wire_uint_8_list> message,
+    ffi.Pointer<wire_uint_8_list> nonce,
+    ffi.Pointer<wire_uint_8_list> key,
+  ) {
+    return _wire_crypto_stream_chacha20_xor(
+      port_,
+      message,
+      nonce,
+      key,
+    );
+  }
+
+  late final _wire_crypto_stream_chacha20_xorPtr = _lookup<
+          ffi.NativeFunction<
+              ffi.Void Function(
+                  ffi.Int64,
+                  ffi.Pointer<wire_uint_8_list>,
+                  ffi.Pointer<wire_uint_8_list>,
+                  ffi.Pointer<wire_uint_8_list>)>>(
+      'wire_crypto_stream_chacha20_xor');
+  late final _wire_crypto_stream_chacha20_xor =
+      _wire_crypto_stream_chacha20_xorPtr.asFunction<
+          void Function(int, ffi.Pointer<wire_uint_8_list>,
+              ffi.Pointer<wire_uint_8_list>, ffi.Pointer<wire_uint_8_list>)>();
+
+  void wire_crypto_aead_chacha20poly1305_encrypt(
+    int port_,
+    ffi.Pointer<wire_uint_8_list> message,
+    ffi.Pointer<wire_uint_8_list> additional_data,
+    ffi.Pointer<wire_uint_8_list> nonce,
+    ffi.Pointer<wire_uint_8_list> key,
+  ) {
+    return _wire_crypto_aead_chacha20poly1305_encrypt(
+      port_,
+      message,
+      additional_data,
+      nonce,
+      key,
+    );
+  }
+
+  late final _wire_crypto_aead_chacha20poly1305_encryptPtr = _lookup<
+          ffi.NativeFunction<
+              ffi.Void Function(
+                  ffi.Int64,
+                  ffi.Pointer<wire_uint_8_list>,
+                  ffi.Pointer<wire_uint_8_list>,
+                  ffi.Pointer<wire_uint_8_list>,
+                  ffi.Pointer<wire_uint_8_list>)>>(
+      'wire_crypto_aead_chacha20poly1305_encrypt');
+  late final _wire_crypto_aead_chacha20poly1305_encrypt =
+      _wire_crypto_aead_chacha20poly1305_encryptPtr.asFunction<
+          void Function(
+              int,
+              ffi.Pointer<wire_uint_8_list>,
+              ffi.Pointer<wire_uint_8_list>,
+              ffi.Pointer<wire_uint_8_list>,
+              ffi.Pointer<wire_uint_8_list>)>();
 
   void wire_bin_to_hex(
     int port_,
@@ -278,6 +654,60 @@ class LazysodiumWire implements FlutterRustBridgeWireBase {
   late final _wire_hex_to_bin = _wire_hex_to_binPtr
       .asFunction<void Function(int, ffi.Pointer<wire_uint_8_list>)>();
 
+  void wire_random_bytes_buf(
+    int port_,
+    int size,
+  ) {
+    return _wire_random_bytes_buf(
+      port_,
+      size,
+    );
+  }
+
+  late final _wire_random_bytes_bufPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.UintPtr)>>(
+          'wire_random_bytes_buf');
+  late final _wire_random_bytes_buf =
+      _wire_random_bytes_bufPtr.asFunction<void Function(int, int)>();
+
+  void wire_random_nonce_bytes(
+    int port_,
+  ) {
+    return _wire_random_nonce_bytes(
+      port_,
+    );
+  }
+
+  late final _wire_random_nonce_bytesPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
+          'wire_random_nonce_bytes');
+  late final _wire_random_nonce_bytes =
+      _wire_random_nonce_bytesPtr.asFunction<void Function(int)>();
+
+  void wire_random_nonce_hex(
+    int port_,
+  ) {
+    return _wire_random_nonce_hex(
+      port_,
+    );
+  }
+
+  late final _wire_random_nonce_hexPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
+          'wire_random_nonce_hex');
+  late final _wire_random_nonce_hex =
+      _wire_random_nonce_hexPtr.asFunction<void Function(int)>();
+
+  ffi.Pointer<wire_KeyPair> new_box_autoadd_key_pair_0() {
+    return _new_box_autoadd_key_pair_0();
+  }
+
+  late final _new_box_autoadd_key_pair_0Ptr =
+      _lookup<ffi.NativeFunction<ffi.Pointer<wire_KeyPair> Function()>>(
+          'new_box_autoadd_key_pair_0');
+  late final _new_box_autoadd_key_pair_0 = _new_box_autoadd_key_pair_0Ptr
+      .asFunction<ffi.Pointer<wire_KeyPair> Function()>();
+
   ffi.Pointer<wire_uint_8_list> new_uint_8_list_0(
     int len,
   ) {
@@ -308,16 +738,26 @@ class LazysodiumWire implements FlutterRustBridgeWireBase {
       _free_WireSyncReturnPtr.asFunction<void Function(WireSyncReturn)>();
 }
 
-class _Dart_Handle extends ffi.Opaque {}
+final class _Dart_Handle extends ffi.Opaque {}
 
-class wire_uint_8_list extends ffi.Struct {
+final class wire_uint_8_list extends ffi.Struct {
   external ffi.Pointer<ffi.Uint8> ptr;
 
   @ffi.Int32()
   external int len;
 }
 
+final class wire_KeyPair extends ffi.Struct {
+  external ffi.Pointer<wire_uint_8_list> pk;
+
+  external ffi.Pointer<wire_uint_8_list> sk;
+}
+
 typedef DartPostCObjectFnType = ffi.Pointer<
     ffi.NativeFunction<
         ffi.Bool Function(DartPort port_id, ffi.Pointer<ffi.Void> message)>>;
 typedef DartPort = ffi.Int64;
+
+const int CRYPTO_NONCE_BYTES = 24;
+
+const int CRYPTO_NONCE_HEX = 48;

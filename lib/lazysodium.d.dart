@@ -9,9 +9,52 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge.dart';
 import 'package:uuid/uuid.dart';
 
 abstract class Lazysodium {
-  Future<KeyPair> genKeypair({dynamic hint});
+  Future<KeyPair> cryptoKxKeypair(
+      {required int pkSize, required int skSize, dynamic hint});
 
-  FlutterRustBridgeTaskConstMeta get kGenKeypairConstMeta;
+  FlutterRustBridgeTaskConstMeta get kCryptoKxKeypairConstMeta;
+
+  Future<Uint8List> cryptoBoxBeforenm({required KeyPair keypair, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kCryptoBoxBeforenmConstMeta;
+
+  Future<String> cryptoBoxBeforenmHex({required KeyPair keypair, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kCryptoBoxBeforenmHexConstMeta;
+
+  Future<SessionKey> cryptoKxClientSessionKeys(
+      {required Uint8List clientPk,
+      required Uint8List clientSk,
+      required Uint8List serverPk,
+      dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kCryptoKxClientSessionKeysConstMeta;
+
+  Future<SessionKey> cryptoKxServerSessionKeys(
+      {required Uint8List serverPk,
+      required Uint8List serverSk,
+      required Uint8List clientPk,
+      dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kCryptoKxServerSessionKeysConstMeta;
+
+  Future<Uint8List> cryptoStreamChacha20Xor(
+      {required Uint8List message,
+      required Uint8List nonce,
+      required Uint8List key,
+      dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kCryptoStreamChacha20XorConstMeta;
+
+  Future<Uint8List> cryptoAeadChacha20Poly1305Encrypt(
+      {required Uint8List message,
+      required Uint8List additionalData,
+      required Uint8List nonce,
+      required Uint8List key,
+      dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta
+      get kCryptoAeadChacha20Poly1305EncryptConstMeta;
 
   Future<String> binToHex({required Uint8List data, dynamic hint});
 
@@ -20,6 +63,18 @@ abstract class Lazysodium {
   Future<Uint8List> hexToBin({required String hex, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kHexToBinConstMeta;
+
+  Future<Uint8List> randomBytesBuf({required int size, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kRandomBytesBufConstMeta;
+
+  Future<Uint8List> randomNonceBytes({dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kRandomNonceBytesConstMeta;
+
+  Future<String> randomNonceHex({dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kRandomNonceHexConstMeta;
 }
 
 class KeyPair {
@@ -29,5 +84,15 @@ class KeyPair {
   const KeyPair({
     required this.pk,
     required this.sk,
+  });
+}
+
+class SessionKey {
+  final Uint8List rx;
+  final Uint8List tx;
+
+  const SessionKey({
+    required this.rx,
+    required this.tx,
   });
 }

@@ -22,14 +22,152 @@ use std::sync::Arc;
 
 // Section: wire functions
 
-fn wire_gen_keypair_impl(port_: MessagePort) {
+fn wire_crypto_kx_keypair_impl(
+    port_: MessagePort,
+    pk_size: impl Wire2Api<usize> + UnwindSafe,
+    sk_size: impl Wire2Api<usize> + UnwindSafe,
+) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, KeyPair>(
         WrapInfo {
-            debug_name: "gen_keypair",
+            debug_name: "crypto_kx_keypair",
             port: Some(port_),
             mode: FfiCallMode::Normal,
         },
-        move || move |task_callback| Ok(crypto_kx_keypair(CRYPTO_KX_PK_BYTES, CRYPTO_KX_SK_BYTES)),
+        move || {
+            let api_pk_size = pk_size.wire2api();
+            let api_sk_size = sk_size.wire2api();
+            move |task_callback| Ok(crypto_kx_keypair(api_pk_size, api_sk_size))
+        },
+    )
+}
+fn wire_crypto_box_beforenm_impl(port_: MessagePort, keypair: impl Wire2Api<KeyPair> + UnwindSafe) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, Vec<u8>>(
+        WrapInfo {
+            debug_name: "crypto_box_beforenm",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || {
+            let api_keypair = keypair.wire2api();
+            move |task_callback| Ok(crypto_box_beforenm(api_keypair))
+        },
+    )
+}
+fn wire_crypto_box_beforenm_hex_impl(
+    port_: MessagePort,
+    keypair: impl Wire2Api<KeyPair> + UnwindSafe,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, String>(
+        WrapInfo {
+            debug_name: "crypto_box_beforenm_hex",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || {
+            let api_keypair = keypair.wire2api();
+            move |task_callback| Ok(crypto_box_beforenm_hex(api_keypair))
+        },
+    )
+}
+fn wire_crypto_kx_client_session_keys_impl(
+    port_: MessagePort,
+    client_pk: impl Wire2Api<Vec<u8>> + UnwindSafe,
+    client_sk: impl Wire2Api<Vec<u8>> + UnwindSafe,
+    server_pk: impl Wire2Api<Vec<u8>> + UnwindSafe,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, SessionKey>(
+        WrapInfo {
+            debug_name: "crypto_kx_client_session_keys",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || {
+            let api_client_pk = client_pk.wire2api();
+            let api_client_sk = client_sk.wire2api();
+            let api_server_pk = server_pk.wire2api();
+            move |task_callback| {
+                Ok(crypto_kx_client_session_keys(
+                    api_client_pk,
+                    api_client_sk,
+                    api_server_pk,
+                ))
+            }
+        },
+    )
+}
+fn wire_crypto_kx_server_session_keys_impl(
+    port_: MessagePort,
+    server_pk: impl Wire2Api<Vec<u8>> + UnwindSafe,
+    server_sk: impl Wire2Api<Vec<u8>> + UnwindSafe,
+    client_pk: impl Wire2Api<Vec<u8>> + UnwindSafe,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, SessionKey>(
+        WrapInfo {
+            debug_name: "crypto_kx_server_session_keys",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || {
+            let api_server_pk = server_pk.wire2api();
+            let api_server_sk = server_sk.wire2api();
+            let api_client_pk = client_pk.wire2api();
+            move |task_callback| {
+                Ok(crypto_kx_server_session_keys(
+                    api_server_pk,
+                    api_server_sk,
+                    api_client_pk,
+                ))
+            }
+        },
+    )
+}
+fn wire_crypto_stream_chacha20_xor_impl(
+    port_: MessagePort,
+    message: impl Wire2Api<Vec<u8>> + UnwindSafe,
+    nonce: impl Wire2Api<Vec<u8>> + UnwindSafe,
+    key: impl Wire2Api<Vec<u8>> + UnwindSafe,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, Vec<u8>>(
+        WrapInfo {
+            debug_name: "crypto_stream_chacha20_xor",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || {
+            let api_message = message.wire2api();
+            let api_nonce = nonce.wire2api();
+            let api_key = key.wire2api();
+            move |task_callback| Ok(crypto_stream_chacha20_xor(api_message, api_nonce, api_key))
+        },
+    )
+}
+fn wire_crypto_aead_chacha20poly1305_encrypt_impl(
+    port_: MessagePort,
+    message: impl Wire2Api<Vec<u8>> + UnwindSafe,
+    additional_data: impl Wire2Api<Vec<u8>> + UnwindSafe,
+    nonce: impl Wire2Api<Vec<u8>> + UnwindSafe,
+    key: impl Wire2Api<Vec<u8>> + UnwindSafe,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, Vec<u8>>(
+        WrapInfo {
+            debug_name: "crypto_aead_chacha20poly1305_encrypt",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || {
+            let api_message = message.wire2api();
+            let api_additional_data = additional_data.wire2api();
+            let api_nonce = nonce.wire2api();
+            let api_key = key.wire2api();
+            move |task_callback| {
+                Ok(crypto_aead_chacha20poly1305_encrypt(
+                    api_message,
+                    api_additional_data,
+                    api_nonce,
+                    api_key,
+                ))
+            }
+        },
     )
 }
 fn wire_bin_to_hex_impl(port_: MessagePort, data: impl Wire2Api<Vec<u8>> + UnwindSafe) {
@@ -56,6 +194,39 @@ fn wire_hex_to_bin_impl(port_: MessagePort, hex: impl Wire2Api<String> + UnwindS
             let api_hex = hex.wire2api();
             move |task_callback| Ok(hex_to_bin(api_hex))
         },
+    )
+}
+fn wire_random_bytes_buf_impl(port_: MessagePort, size: impl Wire2Api<usize> + UnwindSafe) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, Vec<u8>>(
+        WrapInfo {
+            debug_name: "random_bytes_buf",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || {
+            let api_size = size.wire2api();
+            move |task_callback| Ok(random_bytes_buf(api_size))
+        },
+    )
+}
+fn wire_random_nonce_bytes_impl(port_: MessagePort) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, Vec<u8>>(
+        WrapInfo {
+            debug_name: "random_nonce_bytes",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || move |task_callback| Ok(random_nonce_bytes()),
+    )
+}
+fn wire_random_nonce_hex_impl(port_: MessagePort) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, String>(
+        WrapInfo {
+            debug_name: "random_nonce_hex",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || move |task_callback| Ok(random_nonce_hex()),
     )
 }
 // Section: wrapper structs
@@ -87,6 +258,11 @@ impl Wire2Api<u8> for u8 {
     }
 }
 
+impl Wire2Api<usize> for usize {
+    fn wire2api(self) -> usize {
+        self
+    }
+}
 // Section: impl IntoDart
 
 impl support::IntoDart for KeyPair {
@@ -100,6 +276,22 @@ impl support::IntoDart for KeyPair {
 }
 impl support::IntoDartExceptPrimitive for KeyPair {}
 impl rust2dart::IntoIntoDart<KeyPair> for KeyPair {
+    fn into_into_dart(self) -> Self {
+        self
+    }
+}
+
+impl support::IntoDart for SessionKey {
+    fn into_dart(self) -> support::DartAbi {
+        vec![
+            self.rx.into_into_dart().into_dart(),
+            self.tx.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl support::IntoDartExceptPrimitive for SessionKey {}
+impl rust2dart::IntoIntoDart<SessionKey> for SessionKey {
     fn into_into_dart(self) -> Self {
         self
     }
