@@ -1,10 +1,12 @@
 use libc::{c_char, c_uchar};
 use libsodium_sys::{crypto_kx_PUBLICKEYBYTES, crypto_kx_SECRETKEYBYTES};
 
-pub const KX_PK_BYTES: usize = crypto_kx_PUBLICKEYBYTES as usize;
-pub const KX_SK_BYTES: usize = crypto_kx_SECRETKEYBYTES as usize;
-pub const KX_PK_HEX_BYTES: usize = KX_PK_BYTES * 2;
-pub const KX_SK_HEX_BYTES: usize = KX_SK_BYTES * 2;
+pub const CRYPTO_KX_PK_BYTE_SIZE: usize = crypto_kx_PUBLICKEYBYTES as usize;
+pub const CRYPTO_KX_SK_BYTE_SIZE: usize = crypto_kx_SECRETKEYBYTES as usize;
+pub const CRYPTO_KX_PK_HEX_SIZE: usize = CRYPTO_KX_PK_BYTE_SIZE * 2;
+pub const CRYPTO_KX_SK_HEX_SIZE: usize = CRYPTO_KX_SK_BYTE_SIZE * 2;
+pub const CRYPTO_NONCE_BYTE_SIZE: usize = 24;
+pub const CRYPTO_NONCE_HEX_SIZE: usize = 48;
 
 #[derive(Debug)]
 pub struct KeyPair {
@@ -13,8 +15,8 @@ pub struct KeyPair {
 }
 
 pub fn gen_keypair() -> KeyPair {
-    let mut pk: [u8; KX_PK_BYTES] = [0; KX_PK_BYTES];
-    let mut sk: [u8; KX_SK_BYTES] = [0; KX_SK_BYTES];
+    let mut pk: [u8; CRYPTO_KX_PK_BYTE_SIZE] = [0; CRYPTO_KX_PK_BYTE_SIZE];
+    let mut sk: [u8; CRYPTO_KX_SK_BYTE_SIZE] = [0; CRYPTO_KX_SK_BYTE_SIZE];
 
     unsafe {
         libsodium_sys::crypto_kx_keypair(pk.as_mut_ptr(), sk.as_mut_ptr());
@@ -79,6 +81,32 @@ pub fn hex_to_bin(hex: String) -> Vec<u8> {
     binary_data
 }
 
+pub fn random_bytes_buf(size: usize) -> Vec<u8> {
+    // Create a mutable buffer of the specified size to hold the random bytes
+    let mut buffer: Vec<c_uchar> = vec![0; size];
+
+    // Call randombytes_buf to fill the buffer with random bytes
+    unsafe {
+        libsodium_sys::randombytes_buf(buffer.as_mut_ptr() as *mut libc::c_void, size);
+    }
+
+    // Convert the buffer to Vec<u8>
+    let random_bytes: Vec<u8> = buffer.into_iter().map(|byte| byte as u8).collect();
+
+    random_bytes
+}
+
+pub fn random_nonce_bytes() -> Vec<u8> {
+    let bytes = random_bytes_buf(CRYPTO_NONCE_BYTE_SIZE);
+    return bytes;
+}
+
+pub fn random_nonce_hex() -> String {
+    let bytes = random_bytes_buf(CRYPTO_NONCE_BYTE_SIZE);
+    let hex = bin_to_hex(bytes);
+    return hex;
+}
+
 fn vec_to_string(hex_output: Vec<i8>) -> String {
     unsafe { std::ffi::CStr::from_ptr(hex_output.as_ptr()) }
         .to_string_lossy()
@@ -106,8 +134,8 @@ mod tests {
         let sk_hex = bin_to_hex(sk);
         println!("{:?}", &pk_hex);
         println!("{:?}", &sk_hex);
-        assert_eq!(pk_hex.len(), KX_PK_HEX_BYTES);
-        assert_eq!(sk_hex.len(), KX_SK_HEX_BYTES);
+        assert_eq!(pk_hex.len(), CRYPTO_KX_PK_HEX_SIZE);
+        assert_eq!(sk_hex.len(), CRYPTO_KX_SK_HEX_SIZE);
     }
 
     #[test]
@@ -124,5 +152,32 @@ mod tests {
         println!("{:?}", &actual_sk_hex);
         assert_eq!(actual_pk_hex, pk_hex);
         assert_eq!(actual_sk_hex, sk_hex);
+    }
+
+    #[test]
+    fn test_random_bytes_buf() {
+        let bytes = random_bytes_buf(CRYPTO_NONCE_BYTE_SIZE);
+        let nonce_hex = bin_to_hex(bytes.clone());
+        println!("{:?}", &bytes.len());
+        println!("{:?}", &bytes);
+        println!("{:?}", &nonce_hex);
+        println!("{:?}", &nonce_hex.len());
+        assert_eq!(bytes.len(), CRYPTO_NONCE_BYTE_SIZE)
+    }
+
+    #[test]
+    fn test_random_nonce_bytes() {
+        let bytes = random_nonce_bytes();
+        println!("{:?}", &bytes.len());
+        println!("{:?}", &bytes);
+        assert_eq!(bytes.len(), CRYPTO_NONCE_BYTE_SIZE)
+    }
+
+    #[test]
+    fn test_random_nonce_hex() {
+        let hex = random_nonce_hex();
+        println!("{:?}", &hex.len());
+        println!("{:?}", &hex);
+        assert_eq!(hex.len(), CRYPTO_NONCE_HEX_SIZE)
     }
 }
