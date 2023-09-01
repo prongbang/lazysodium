@@ -1,5 +1,5 @@
 use libc::{c_char, c_uchar};
-use libsodium_sys::{crypto_aead_aes256gcm_KEYBYTES, crypto_aead_chacha20poly1305_ietf_KEYBYTES, crypto_aead_chacha20poly1305_IETF_KEYBYTES, crypto_aead_chacha20poly1305_KEYBYTES, crypto_aead_xchacha20poly1305_ietf_KEYBYTES, crypto_auth_hmacsha512_KEYBYTES, crypto_box_BEFORENMBYTES, crypto_box_curve25519xsalsa20poly1305_PUBLICKEYBYTES, crypto_box_curve25519xsalsa20poly1305_SECRETKEYBYTES, crypto_box_PUBLICKEYBYTES, crypto_box_SECRETKEYBYTES, crypto_kx_PUBLICKEYBYTES, crypto_kx_SECRETKEYBYTES, crypto_kx_SESSIONKEYBYTES, crypto_secretbox_KEYBYTES, crypto_secretbox_NONCEBYTES, crypto_secretbox_xchacha20poly1305_KEYBYTES, crypto_secretbox_xchacha20poly1305_MACBYTES, crypto_secretbox_xchacha20poly1305_NONCEBYTES, crypto_secretstream_xchacha20poly1305_KEYBYTES, crypto_stream_chacha20_ietf_KEYBYTES, crypto_stream_chacha20_ietf_NONCEBYTES, crypto_stream_chacha20_KEYBYTES, crypto_stream_chacha20_NONCEBYTES, crypto_stream_KEYBYTES, crypto_stream_NONCEBYTES, crypto_stream_xchacha20_KEYBYTES, crypto_stream_xchacha20_NONCEBYTES, crypto_stream_xsalsa20_KEYBYTES};
+use libsodium_sys::{crypto_aead_aes256gcm_KEYBYTES, crypto_aead_chacha20poly1305_ABYTES, crypto_aead_chacha20poly1305_ietf_KEYBYTES, crypto_aead_chacha20poly1305_IETF_KEYBYTES, crypto_aead_chacha20poly1305_KEYBYTES, crypto_aead_chacha20poly1305_NPUBBYTES, crypto_aead_chacha20poly1305_NSECBYTES, crypto_aead_xchacha20poly1305_ietf_KEYBYTES, crypto_auth_hmacsha512_KEYBYTES, crypto_box_BEFORENMBYTES, crypto_box_curve25519xsalsa20poly1305_PUBLICKEYBYTES, crypto_box_curve25519xsalsa20poly1305_SECRETKEYBYTES, crypto_box_PUBLICKEYBYTES, crypto_box_SECRETKEYBYTES, crypto_kx_PUBLICKEYBYTES, crypto_kx_SECRETKEYBYTES, crypto_kx_SESSIONKEYBYTES, crypto_secretbox_KEYBYTES, crypto_secretbox_NONCEBYTES, crypto_secretbox_xchacha20poly1305_KEYBYTES, crypto_secretbox_xchacha20poly1305_MACBYTES, crypto_secretbox_xchacha20poly1305_NONCEBYTES, crypto_secretstream_xchacha20poly1305_KEYBYTES, crypto_stream_chacha20_ietf_KEYBYTES, crypto_stream_chacha20_ietf_NONCEBYTES, crypto_stream_chacha20_KEYBYTES, crypto_stream_chacha20_NONCEBYTES, crypto_stream_KEYBYTES, crypto_stream_NONCEBYTES, crypto_stream_xchacha20_KEYBYTES, crypto_stream_xchacha20_NONCEBYTES, crypto_stream_xsalsa20_KEYBYTES};
 
 pub const CRYPTO_KX_PK_BYTES: usize = crypto_kx_PUBLICKEYBYTES as usize;
 pub const CRYPTO_KX_SK_BYTES: usize = crypto_kx_SECRETKEYBYTES as usize;
@@ -9,8 +9,10 @@ pub const CRYPTO_KX_SESSION_KEY_BYTES: usize = crypto_kx_SESSIONKEYBYTES as usiz
 pub const CRYPTO_KX_SECRET_KEY_BYTES: usize = crypto_kx_SECRETKEYBYTES as usize;
 pub const CRYPTO_BOX_PK_KEY_BYTES: usize = crypto_box_PUBLICKEYBYTES as usize;
 pub const CRYPTO_BOX_SK_KEY_BYTES: usize = crypto_box_SECRETKEYBYTES as usize;
-pub const CRYPTO_AEAD_AES256GCM_KEY_BYTES: usize = crypto_aead_aes256gcm_KEYBYTES as usize;
 pub const CRYPTO_AEAD_CHACHA20POLY1305_KEY_BYTES: usize = crypto_aead_chacha20poly1305_KEYBYTES as usize;
+pub const CRYPTO_AEAD_CHACHA20POLY1305_ABYTES: usize = crypto_aead_chacha20poly1305_ABYTES as usize;
+pub const CRYPTO_AEAD_CHACHA20POLY1305_NSEC_BYTES: usize = crypto_aead_chacha20poly1305_NSECBYTES as usize;
+pub const CRYPTO_AEAD_CHACHA20POLY1305_NPUB_BYTES: usize = crypto_aead_chacha20poly1305_NPUBBYTES as usize;
 pub const CRYPTO_AEAD_CHACHA20POLY1305_IETF_KEY_BYTES: usize = crypto_aead_chacha20poly1305_ietf_KEYBYTES as usize;
 pub const CRYPTO_AEAD_XCHACHA20POLY1305_IETF_KEY_BYTES: usize = crypto_aead_xchacha20poly1305_ietf_KEYBYTES as usize;
 pub const CRYPTO_STREAM_XSALSA20_KEY_BYTES: usize = crypto_stream_xsalsa20_KEYBYTES as usize;
@@ -187,7 +189,7 @@ pub fn crypto_aead_chacha20poly1305_encrypt(
     key: Vec<u8>,
 ) -> Vec<u8> {
     // Determine the size of the ciphertext, which is the size of the message plus the overhead
-    let ciphertext_size = message.len() + libsodium_sys::crypto_aead_chacha20poly1305_ABYTES as usize;
+    let ciphertext_size = message.len() + CRYPTO_AEAD_CHACHA20POLY1305_ABYTES;
 
     // Create a mutable vector to hold the ciphertext
     let mut ciphertext: Vec<u8> = vec![0; ciphertext_size];
@@ -412,6 +414,30 @@ mod tests {
         println!("{:?}", &hex.len());
         println!("{:?}", &hex);
         assert_eq!(hex.len(), CRYPTO_NONCE_HEX);
+    }
+
+    #[test]
+    fn test_crypto_aead_chacha20poly1305_encrypt() {
+        let nonce_byte = random_bytes_buf(CRYPTO_AEAD_CHACHA20POLY1305_NPUB_BYTES);
+        let client_keypair = crypto_kx_keypair(CRYPTO_AEAD_CHACHA20POLY1305_KEY_BYTES, CRYPTO_AEAD_CHACHA20POLY1305_KEY_BYTES);
+        let server_keypair = crypto_kx_keypair(CRYPTO_AEAD_CHACHA20POLY1305_KEY_BYTES, CRYPTO_AEAD_CHACHA20POLY1305_KEY_BYTES);
+        let kx_server_shared_key = KeyPair {
+            pk: client_keypair.pk,
+            sk: server_keypair.sk,
+        };
+        let kx_server_shared_key_bytes = crypto_box_beforenm(kx_server_shared_key);
+
+        let message = "Lazysodium";
+        let message_bytes = message.as_bytes().to_vec();
+        let additional_data: Vec<u8> = vec![];
+        let cipher_bytes = crypto_aead_chacha20poly1305_encrypt(
+            message_bytes,
+            additional_data,
+            nonce_byte,
+            kx_server_shared_key_bytes,
+        );
+        let ciphertext = bin_to_hex(cipher_bytes);
+        println!("{}", ciphertext);
     }
 
     #[test]
