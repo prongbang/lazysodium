@@ -22,11 +22,6 @@ typedef struct wire_uint_8_list {
   int32_t len;
 } wire_uint_8_list;
 
-typedef struct wire_KeyPair {
-  struct wire_uint_8_list *pk;
-  struct wire_uint_8_list *sk;
-} wire_KeyPair;
-
 typedef struct DartCObject *WireSyncReturn;
 
 void store_dart_post_cobject(DartPostCObjectFnType ptr);
@@ -41,13 +36,9 @@ intptr_t init_frb_dart_api_dl(void *obj);
 
 void wire_gen_keypair(int64_t port_);
 
-void wire_bin2hex(int64_t port_, struct wire_uint_8_list *data);
+void wire_bin_to_hex(int64_t port_, struct wire_uint_8_list *data);
 
-void wire_pk_hex__method__KeyPair(int64_t port_, struct wire_KeyPair *that);
-
-void wire_sk_hex__method__KeyPair(int64_t port_, struct wire_KeyPair *that);
-
-struct wire_KeyPair *new_box_autoadd_key_pair_0(void);
+void wire_hex_to_bin(int64_t port_, struct wire_uint_8_list *hex);
 
 struct wire_uint_8_list *new_uint_8_list_0(int32_t len);
 
@@ -56,10 +47,8 @@ void free_WireSyncReturn(WireSyncReturn ptr);
 static int64_t dummy_method_to_enforce_bundling(void) {
     int64_t dummy_var = 0;
     dummy_var ^= ((int64_t) (void*) wire_gen_keypair);
-    dummy_var ^= ((int64_t) (void*) wire_bin2hex);
-    dummy_var ^= ((int64_t) (void*) wire_pk_hex__method__KeyPair);
-    dummy_var ^= ((int64_t) (void*) wire_sk_hex__method__KeyPair);
-    dummy_var ^= ((int64_t) (void*) new_box_autoadd_key_pair_0);
+    dummy_var ^= ((int64_t) (void*) wire_bin_to_hex);
+    dummy_var ^= ((int64_t) (void*) wire_hex_to_bin);
     dummy_var ^= ((int64_t) (void*) new_uint_8_list_0);
     dummy_var ^= ((int64_t) (void*) free_WireSyncReturn);
     dummy_var ^= ((int64_t) (void*) store_dart_post_cobject);

@@ -29,7 +29,7 @@ class LazysodiumImpl implements Lazysodium {
   Future<KeyPair> genKeypair({dynamic hint}) {
     return _platform.executeNormal(FlutterRustBridgeTask(
       callFfi: (port_) => _platform.inner.wire_gen_keypair(port_),
-      parseSuccessData: (d) => _wire2api_key_pair(d),
+      parseSuccessData: _wire2api_key_pair,
       constMeta: kGenKeypairConstMeta,
       argValues: [],
       hint: hint,
@@ -42,57 +42,38 @@ class LazysodiumImpl implements Lazysodium {
         argNames: [],
       );
 
-  Future<String> bin2Hex({required Uint8List data, dynamic hint}) {
+  Future<String> binToHex({required Uint8List data, dynamic hint}) {
     var arg0 = _platform.api2wire_uint_8_list(data);
     return _platform.executeNormal(FlutterRustBridgeTask(
-      callFfi: (port_) => _platform.inner.wire_bin2hex(port_, arg0),
+      callFfi: (port_) => _platform.inner.wire_bin_to_hex(port_, arg0),
       parseSuccessData: _wire2api_String,
-      constMeta: kBin2HexConstMeta,
+      constMeta: kBinToHexConstMeta,
       argValues: [data],
       hint: hint,
     ));
   }
 
-  FlutterRustBridgeTaskConstMeta get kBin2HexConstMeta =>
+  FlutterRustBridgeTaskConstMeta get kBinToHexConstMeta =>
       const FlutterRustBridgeTaskConstMeta(
-        debugName: "bin2hex",
+        debugName: "bin_to_hex",
         argNames: ["data"],
       );
 
-  Future<String> pkHexMethodKeyPair({required KeyPair that, dynamic hint}) {
-    var arg0 = _platform.api2wire_box_autoadd_key_pair(that);
+  Future<Uint8List> hexToBin({required String hex, dynamic hint}) {
+    var arg0 = _platform.api2wire_String(hex);
     return _platform.executeNormal(FlutterRustBridgeTask(
-      callFfi: (port_) =>
-          _platform.inner.wire_pk_hex__method__KeyPair(port_, arg0),
-      parseSuccessData: _wire2api_String,
-      constMeta: kPkHexMethodKeyPairConstMeta,
-      argValues: [that],
+      callFfi: (port_) => _platform.inner.wire_hex_to_bin(port_, arg0),
+      parseSuccessData: _wire2api_uint_8_list,
+      constMeta: kHexToBinConstMeta,
+      argValues: [hex],
       hint: hint,
     ));
   }
 
-  FlutterRustBridgeTaskConstMeta get kPkHexMethodKeyPairConstMeta =>
+  FlutterRustBridgeTaskConstMeta get kHexToBinConstMeta =>
       const FlutterRustBridgeTaskConstMeta(
-        debugName: "pk_hex__method__KeyPair",
-        argNames: ["that"],
-      );
-
-  Future<String> skHexMethodKeyPair({required KeyPair that, dynamic hint}) {
-    var arg0 = _platform.api2wire_box_autoadd_key_pair(that);
-    return _platform.executeNormal(FlutterRustBridgeTask(
-      callFfi: (port_) =>
-          _platform.inner.wire_sk_hex__method__KeyPair(port_, arg0),
-      parseSuccessData: _wire2api_String,
-      constMeta: kSkHexMethodKeyPairConstMeta,
-      argValues: [that],
-      hint: hint,
-    ));
-  }
-
-  FlutterRustBridgeTaskConstMeta get kSkHexMethodKeyPairConstMeta =>
-      const FlutterRustBridgeTaskConstMeta(
-        debugName: "sk_hex__method__KeyPair",
-        argNames: ["that"],
+        debugName: "hex_to_bin",
+        argNames: ["hex"],
       );
 
   void dispose() {
@@ -109,7 +90,6 @@ class LazysodiumImpl implements Lazysodium {
     if (arr.length != 2)
       throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
     return KeyPair(
-      bridge: this,
       pk: _wire2api_uint_8_list(arr[0]),
       sk: _wire2api_uint_8_list(arr[1]),
     );
@@ -139,10 +119,8 @@ class LazysodiumPlatform extends FlutterRustBridgeBase<LazysodiumWire> {
 // Section: api2wire
 
   @protected
-  ffi.Pointer<wire_KeyPair> api2wire_box_autoadd_key_pair(KeyPair raw) {
-    final ptr = inner.new_box_autoadd_key_pair_0();
-    _api_fill_to_wire_key_pair(raw, ptr.ref);
-    return ptr;
+  ffi.Pointer<wire_uint_8_list> api2wire_String(String raw) {
+    return api2wire_uint_8_list(utf8.encoder.convert(raw));
   }
 
   @protected
@@ -154,16 +132,6 @@ class LazysodiumPlatform extends FlutterRustBridgeBase<LazysodiumWire> {
 // Section: finalizer
 
 // Section: api_fill_to_wire
-
-  void _api_fill_to_wire_box_autoadd_key_pair(
-      KeyPair apiObj, ffi.Pointer<wire_KeyPair> wireObj) {
-    _api_fill_to_wire_key_pair(apiObj, wireObj.ref);
-  }
-
-  void _api_fill_to_wire_key_pair(KeyPair apiObj, wire_KeyPair wireObj) {
-    wireObj.pk = api2wire_uint_8_list(apiObj.pk);
-    wireObj.sk = api2wire_uint_8_list(apiObj.sk);
-  }
 }
 
 // ignore_for_file: camel_case_types, non_constant_identifier_names, avoid_positional_boolean_parameters, annotate_overrides, constant_identifier_names
@@ -276,66 +244,39 @@ class LazysodiumWire implements FlutterRustBridgeWireBase {
   late final _wire_gen_keypair =
       _wire_gen_keypairPtr.asFunction<void Function(int)>();
 
-  void wire_bin2hex(
+  void wire_bin_to_hex(
     int port_,
     ffi.Pointer<wire_uint_8_list> data,
   ) {
-    return _wire_bin2hex(
+    return _wire_bin_to_hex(
       port_,
       data,
     );
   }
 
-  late final _wire_bin2hexPtr = _lookup<
+  late final _wire_bin_to_hexPtr = _lookup<
       ffi.NativeFunction<
           ffi.Void Function(
-              ffi.Int64, ffi.Pointer<wire_uint_8_list>)>>('wire_bin2hex');
-  late final _wire_bin2hex = _wire_bin2hexPtr
+              ffi.Int64, ffi.Pointer<wire_uint_8_list>)>>('wire_bin_to_hex');
+  late final _wire_bin_to_hex = _wire_bin_to_hexPtr
       .asFunction<void Function(int, ffi.Pointer<wire_uint_8_list>)>();
 
-  void wire_pk_hex__method__KeyPair(
+  void wire_hex_to_bin(
     int port_,
-    ffi.Pointer<wire_KeyPair> that,
+    ffi.Pointer<wire_uint_8_list> hex,
   ) {
-    return _wire_pk_hex__method__KeyPair(
+    return _wire_hex_to_bin(
       port_,
-      that,
+      hex,
     );
   }
 
-  late final _wire_pk_hex__method__KeyPairPtr = _lookup<
+  late final _wire_hex_to_binPtr = _lookup<
       ffi.NativeFunction<
-          ffi.Void Function(ffi.Int64,
-              ffi.Pointer<wire_KeyPair>)>>('wire_pk_hex__method__KeyPair');
-  late final _wire_pk_hex__method__KeyPair = _wire_pk_hex__method__KeyPairPtr
-      .asFunction<void Function(int, ffi.Pointer<wire_KeyPair>)>();
-
-  void wire_sk_hex__method__KeyPair(
-    int port_,
-    ffi.Pointer<wire_KeyPair> that,
-  ) {
-    return _wire_sk_hex__method__KeyPair(
-      port_,
-      that,
-    );
-  }
-
-  late final _wire_sk_hex__method__KeyPairPtr = _lookup<
-      ffi.NativeFunction<
-          ffi.Void Function(ffi.Int64,
-              ffi.Pointer<wire_KeyPair>)>>('wire_sk_hex__method__KeyPair');
-  late final _wire_sk_hex__method__KeyPair = _wire_sk_hex__method__KeyPairPtr
-      .asFunction<void Function(int, ffi.Pointer<wire_KeyPair>)>();
-
-  ffi.Pointer<wire_KeyPair> new_box_autoadd_key_pair_0() {
-    return _new_box_autoadd_key_pair_0();
-  }
-
-  late final _new_box_autoadd_key_pair_0Ptr =
-      _lookup<ffi.NativeFunction<ffi.Pointer<wire_KeyPair> Function()>>(
-          'new_box_autoadd_key_pair_0');
-  late final _new_box_autoadd_key_pair_0 = _new_box_autoadd_key_pair_0Ptr
-      .asFunction<ffi.Pointer<wire_KeyPair> Function()>();
+          ffi.Void Function(
+              ffi.Int64, ffi.Pointer<wire_uint_8_list>)>>('wire_hex_to_bin');
+  late final _wire_hex_to_bin = _wire_hex_to_binPtr
+      .asFunction<void Function(int, ffi.Pointer<wire_uint_8_list>)>();
 
   ffi.Pointer<wire_uint_8_list> new_uint_8_list_0(
     int len,
@@ -367,19 +308,13 @@ class LazysodiumWire implements FlutterRustBridgeWireBase {
       _free_WireSyncReturnPtr.asFunction<void Function(WireSyncReturn)>();
 }
 
-final class _Dart_Handle extends ffi.Opaque {}
+class _Dart_Handle extends ffi.Opaque {}
 
-final class wire_uint_8_list extends ffi.Struct {
+class wire_uint_8_list extends ffi.Struct {
   external ffi.Pointer<ffi.Uint8> ptr;
 
   @ffi.Int32()
   external int len;
-}
-
-final class wire_KeyPair extends ffi.Struct {
-  external ffi.Pointer<wire_uint_8_list> pk;
-
-  external ffi.Pointer<wire_uint_8_list> sk;
 }
 
 typedef DartPostCObjectFnType = ffi.Pointer<

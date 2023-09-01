@@ -13,35 +13,21 @@ abstract class Lazysodium {
 
   FlutterRustBridgeTaskConstMeta get kGenKeypairConstMeta;
 
-  Future<String> bin2Hex({required Uint8List data, dynamic hint});
+  Future<String> binToHex({required Uint8List data, dynamic hint});
 
-  FlutterRustBridgeTaskConstMeta get kBin2HexConstMeta;
+  FlutterRustBridgeTaskConstMeta get kBinToHexConstMeta;
 
-  Future<String> pkHexMethodKeyPair({required KeyPair that, dynamic hint});
+  Future<Uint8List> hexToBin({required String hex, dynamic hint});
 
-  FlutterRustBridgeTaskConstMeta get kPkHexMethodKeyPairConstMeta;
-
-  Future<String> skHexMethodKeyPair({required KeyPair that, dynamic hint});
-
-  FlutterRustBridgeTaskConstMeta get kSkHexMethodKeyPairConstMeta;
+  FlutterRustBridgeTaskConstMeta get kHexToBinConstMeta;
 }
 
 class KeyPair {
-  final Lazysodium bridge;
   final Uint8List pk;
   final Uint8List sk;
 
   const KeyPair({
-    required this.bridge,
     required this.pk,
     required this.sk,
   });
-
-  Future<String> pkHex({dynamic hint}) => bridge.pkHexMethodKeyPair(
-        that: this,
-      );
-
-  Future<String> skHex({dynamic hint}) => bridge.skHexMethodKeyPair(
-        that: this,
-      );
 }

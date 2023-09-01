@@ -32,48 +32,29 @@ fn wire_gen_keypair_impl(port_: MessagePort) {
         move || move |task_callback| Ok(gen_keypair()),
     )
 }
-fn wire_bin2hex_impl(port_: MessagePort, data: impl Wire2Api<Vec<u8>> + UnwindSafe) {
+fn wire_bin_to_hex_impl(port_: MessagePort, data: impl Wire2Api<Vec<u8>> + UnwindSafe) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, String>(
         WrapInfo {
-            debug_name: "bin2hex",
+            debug_name: "bin_to_hex",
             port: Some(port_),
             mode: FfiCallMode::Normal,
         },
         move || {
             let api_data = data.wire2api();
-            move |task_callback| Ok(bin2hex(api_data))
+            move |task_callback| Ok(bin_to_hex(api_data))
         },
     )
 }
-fn wire_pk_hex__method__KeyPair_impl(
-    port_: MessagePort,
-    that: impl Wire2Api<KeyPair> + UnwindSafe,
-) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, String>(
+fn wire_hex_to_bin_impl(port_: MessagePort, hex: impl Wire2Api<String> + UnwindSafe) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, Vec<u8>>(
         WrapInfo {
-            debug_name: "pk_hex__method__KeyPair",
+            debug_name: "hex_to_bin",
             port: Some(port_),
             mode: FfiCallMode::Normal,
         },
         move || {
-            let api_that = that.wire2api();
-            move |task_callback| Ok(KeyPair::pk_hex(&api_that))
-        },
-    )
-}
-fn wire_sk_hex__method__KeyPair_impl(
-    port_: MessagePort,
-    that: impl Wire2Api<KeyPair> + UnwindSafe,
-) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, String>(
-        WrapInfo {
-            debug_name: "sk_hex__method__KeyPair",
-            port: Some(port_),
-            mode: FfiCallMode::Normal,
-        },
-        move || {
-            let api_that = that.wire2api();
-            move |task_callback| Ok(KeyPair::sk_hex(&api_that))
+            let api_hex = hex.wire2api();
+            move |task_callback| Ok(hex_to_bin(api_hex))
         },
     )
 }
