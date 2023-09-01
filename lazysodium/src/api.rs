@@ -1,12 +1,14 @@
 use libc::{c_char, c_uchar};
-use libsodium_sys::{crypto_kx_PUBLICKEYBYTES, crypto_kx_SECRETKEYBYTES};
+use libsodium_sys::{crypto_box_BEFORENMBYTES, crypto_kx_PUBLICKEYBYTES, crypto_kx_SECRETKEYBYTES, crypto_kx_SESSIONKEYBYTES};
 
 pub const CRYPTO_KX_PK_BYTE_SIZE: usize = crypto_kx_PUBLICKEYBYTES as usize;
 pub const CRYPTO_KX_SK_BYTE_SIZE: usize = crypto_kx_SECRETKEYBYTES as usize;
 pub const CRYPTO_KX_PK_HEX_SIZE: usize = CRYPTO_KX_PK_BYTE_SIZE * 2;
 pub const CRYPTO_KX_SK_HEX_SIZE: usize = CRYPTO_KX_SK_BYTE_SIZE * 2;
+pub const CRYPTO_KX_SESSION_KEY_BYTE_SIZE: usize = crypto_kx_SESSIONKEYBYTES as usize;
 pub const CRYPTO_NONCE_BYTE_SIZE: usize = 24;
 pub const CRYPTO_NONCE_HEX_SIZE: usize = 48;
+pub const CRYPTO_BOX_BEFORE_NM_BYTE_SIZE: usize = crypto_box_BEFORENMBYTES as usize;
 
 #[derive(Debug)]
 pub struct KeyPair {
@@ -14,7 +16,20 @@ pub struct KeyPair {
     pub sk: Vec<u8>,
 }
 
-pub fn gen_keypair() -> KeyPair {
+#[derive(Debug)]
+pub struct KeyExchange {
+    pub pk: Vec<u8>,
+    pub sk: Vec<u8>,
+    pub shared_key: Vec<u8>,
+}
+
+#[derive(Debug)]
+pub struct SessionKey {
+    pub rx: Vec<u8>,
+    pub tx: Vec<u8>,
+}
+
+pub fn crypto_kx_keypair() -> KeyPair {
     let mut pk: [u8; CRYPTO_KX_PK_BYTE_SIZE] = [0; CRYPTO_KX_PK_BYTE_SIZE];
     let mut sk: [u8; CRYPTO_KX_SK_BYTE_SIZE] = [0; CRYPTO_KX_SK_BYTE_SIZE];
 
@@ -25,6 +40,94 @@ pub fn gen_keypair() -> KeyPair {
     KeyPair {
         pk: pk.to_vec(),
         sk: sk.to_vec(),
+    }
+}
+
+pub fn crypto_box_beforenm(keypair: KeyPair) -> Vec<u8> {
+    // Create a mutable vector to store the shared secret key (precomputed)
+    let mut shared_key: Vec<u8> = vec![0; CRYPTO_BOX_BEFORE_NM_BYTE_SIZE];
+
+    // Call crypto_box_beforenm to compute the shared secret key
+    let result = unsafe {
+        libsodium_sys::crypto_box_beforenm(
+            shared_key.as_mut_ptr() as *mut c_uchar,
+            keypair.pk.as_ptr() as *const c_uchar,
+            keypair.sk.as_ptr() as *const c_uchar,
+        )
+    };
+
+    if result == 0 {
+        // The shared secret key has been computed successfully
+        shared_key
+    } else {
+        // An error occurred during key computation; return an empty vector
+        vec![]
+    }
+}
+
+pub fn crypto_box_beforenm_hex(keypair: KeyPair) -> String {
+    let byte = crypto_box_beforenm(keypair);
+    let hex = bin_to_hex(byte);
+    hex
+}
+
+pub fn crypto_kx_client_session_keys(
+    client_pk: Vec<u8>,
+    client_sk: Vec<u8>,
+    server_pk: Vec<u8>,
+) -> SessionKey {
+    // Create mutable vectors to store the session keys
+    let len = client_sk.len();
+    let mut rx: Vec<u8> = vec![0; len];
+    let mut tx: Vec<u8> = vec![0; len];
+
+    // Call crypto_kx_client_session_keys to compute the session keys
+    let result = unsafe {
+        libsodium_sys::crypto_kx_client_session_keys(
+            rx.as_mut_ptr() as *mut c_uchar,
+            tx.as_mut_ptr() as *mut c_uchar,
+            client_pk.as_ptr() as *const c_uchar,
+            client_sk.as_ptr() as *const c_uchar,
+            server_pk.as_ptr() as *const c_uchar,
+        )
+    };
+
+    if result == 0 {
+        // The session keys have been computed successfully
+        SessionKey { rx, tx }
+    } else {
+        // An error occurred during key computation; return empty vectors
+        SessionKey { rx: vec![], tx: vec![] }
+    }
+}
+
+pub fn crypto_kx_server_session_keys(
+    server_pk: Vec<u8>,
+    server_sk: Vec<u8>,
+    client_pk: Vec<u8>,
+) -> SessionKey {
+    // Create mutable vectors to store the session keys
+    let len = server_sk.len();
+    let mut rx: Vec<u8> = vec![0; len];
+    let mut tx: Vec<u8> = vec![0; len];
+
+    // Call crypto_kx_client_session_keys to compute the session keys
+    let result = unsafe {
+        libsodium_sys::crypto_kx_server_session_keys(
+            rx.as_mut_ptr() as *mut c_uchar,
+            tx.as_mut_ptr() as *mut c_uchar,
+            server_pk.as_ptr() as *const c_uchar,
+            server_sk.as_ptr() as *const c_uchar,
+            client_pk.as_ptr() as *const c_uchar,
+        )
+    };
+
+    if result == 0 {
+        // The session keys have been computed successfully
+        SessionKey { rx, tx }
+    } else {
+        // An error occurred during key computation; return empty vectors
+        SessionKey { rx: vec![], tx: vec![] }
     }
 }
 
@@ -119,7 +222,7 @@ mod tests {
 
     #[test]
     fn test_gen_keypair() {
-        let keypair = gen_keypair();
+        let keypair = crypto_kx_keypair();
         println!("{:?}", &keypair.pk.len());
         println!("{:?}", &keypair.sk.len());
         println!("{:?}", &keypair);
@@ -127,9 +230,9 @@ mod tests {
 
     #[test]
     fn test_bin_to_hex() {
-        let result = gen_keypair();
-        let pk = result.pk;
-        let sk = result.sk;
+        let keypair = crypto_kx_keypair();
+        let pk = keypair.pk;
+        let sk = keypair.sk;
         let pk_hex = bin_to_hex(pk);
         let sk_hex = bin_to_hex(sk);
         println!("{:?}", &pk_hex);
@@ -152,6 +255,52 @@ mod tests {
         println!("{:?}", &actual_sk_hex);
         assert_eq!(actual_pk_hex, pk_hex);
         assert_eq!(actual_sk_hex, sk_hex);
+    }
+
+    #[test]
+    fn test_crypto_box_beforenm() {
+        let client_keypair = crypto_kx_keypair();
+        let server_keypair = crypto_kx_keypair();
+        let kx_server_shared_key = KeyPair {
+            pk: client_keypair.pk,
+            sk: server_keypair.sk,
+        };
+        let kx_client_shared_key = KeyPair {
+            pk: server_keypair.pk,
+            sk: client_keypair.sk,
+        };
+        let kx_server_shared_key_bytes = crypto_box_beforenm(kx_server_shared_key);
+        let kx_client_shared_key_bytes = crypto_box_beforenm(kx_client_shared_key);
+        let kx_server_shared_key_hex = bin_to_hex(kx_server_shared_key_bytes);
+        let kx_client_shared_key_hex = bin_to_hex(kx_client_shared_key_bytes);
+        println!("{:?}", &kx_server_shared_key_hex);
+        println!("{:?}", &kx_client_shared_key_hex);
+        assert_eq!(kx_server_shared_key_hex, kx_client_shared_key_hex);
+    }
+
+    #[test]
+    fn test_crypto_kx_client_and_server_session_keys() {
+        let client_keypair = crypto_kx_keypair();
+        let server_keypair = crypto_kx_keypair();
+
+        let kx_client_session_key = crypto_kx_client_session_keys(
+            client_keypair.pk.clone(),
+            client_keypair.pk.clone(),
+            server_keypair.pk.clone(),
+        );
+        let kx_server_session_key = crypto_kx_server_session_keys(
+            server_keypair.pk.clone(),
+            server_keypair.pk.clone(),
+            client_keypair.pk.clone(),
+        );
+        let server_rx_hex = bin_to_hex(kx_client_session_key.rx);
+        let server_tx_hex = bin_to_hex(kx_client_session_key.tx);
+        let client_rx_hex = bin_to_hex(kx_server_session_key.rx);
+        let client_tx_hex = bin_to_hex(kx_server_session_key.tx);
+        println!("{}", server_rx_hex);
+        println!("{}", server_tx_hex);
+        println!("{}", client_rx_hex);
+        println!("{}", client_tx_hex);
     }
 
     #[test]

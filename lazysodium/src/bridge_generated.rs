@@ -29,7 +29,7 @@ fn wire_gen_keypair_impl(port_: MessagePort) {
             port: Some(port_),
             mode: FfiCallMode::Normal,
         },
-        move || move |task_callback| Ok(gen_keypair()),
+        move || move |task_callback| Ok(crypto_kx_keypair()),
     )
 }
 fn wire_bin_to_hex_impl(port_: MessagePort, data: impl Wire2Api<Vec<u8>> + UnwindSafe) {
