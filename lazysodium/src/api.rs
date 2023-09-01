@@ -1,15 +1,39 @@
 use libc::{c_char, c_uchar};
-use libsodium_sys::{crypto_box_BEFORENMBYTES, crypto_kx_PUBLICKEYBYTES, crypto_kx_SECRETKEYBYTES, crypto_kx_SESSIONKEYBYTES, crypto_secretbox_NONCEBYTES};
+use libsodium_sys::{crypto_aead_aes256gcm_KEYBYTES, crypto_aead_chacha20poly1305_ietf_KEYBYTES, crypto_aead_chacha20poly1305_IETF_KEYBYTES, crypto_aead_chacha20poly1305_KEYBYTES, crypto_aead_xchacha20poly1305_ietf_KEYBYTES, crypto_auth_hmacsha512_KEYBYTES, crypto_box_BEFORENMBYTES, crypto_box_curve25519xsalsa20poly1305_PUBLICKEYBYTES, crypto_box_curve25519xsalsa20poly1305_SECRETKEYBYTES, crypto_box_PUBLICKEYBYTES, crypto_box_SECRETKEYBYTES, crypto_kx_PUBLICKEYBYTES, crypto_kx_SECRETKEYBYTES, crypto_kx_SESSIONKEYBYTES, crypto_secretbox_KEYBYTES, crypto_secretbox_NONCEBYTES, crypto_secretbox_xchacha20poly1305_KEYBYTES, crypto_secretbox_xchacha20poly1305_MACBYTES, crypto_secretbox_xchacha20poly1305_NONCEBYTES, crypto_secretstream_xchacha20poly1305_KEYBYTES, crypto_stream_chacha20_ietf_KEYBYTES, crypto_stream_chacha20_ietf_NONCEBYTES, crypto_stream_chacha20_KEYBYTES, crypto_stream_chacha20_NONCEBYTES, crypto_stream_KEYBYTES, crypto_stream_NONCEBYTES, crypto_stream_xchacha20_KEYBYTES, crypto_stream_xchacha20_NONCEBYTES, crypto_stream_xsalsa20_KEYBYTES};
 
+pub const CRYPTO_KX_BYTES: usize = 32;
 pub const CRYPTO_KX_PK_BYTES: usize = crypto_kx_PUBLICKEYBYTES as usize;
 pub const CRYPTO_KX_SK_BYTES: usize = crypto_kx_SECRETKEYBYTES as usize;
 pub const CRYPTO_KX_PK_HEX: usize = CRYPTO_KX_PK_BYTES * 2;
 pub const CRYPTO_KX_SK_HEX: usize = CRYPTO_KX_SK_BYTES * 2;
 pub const CRYPTO_KX_SESSION_KEY_BYTES: usize = crypto_kx_SESSIONKEYBYTES as usize;
+pub const CRYPTO_KX_SECRET_KEY_BYTES: usize = crypto_kx_SECRETKEYBYTES as usize;
+pub const CRYPTO_BOX_PK_KEY_BYTES: usize = crypto_box_PUBLICKEYBYTES as usize;
+pub const CRYPTO_BOX_SK_KEY_BYTES: usize = crypto_box_SECRETKEYBYTES as usize;
+pub const CRYPTO_AEAD_AES256GCM_KEY_BYTES: usize = crypto_aead_aes256gcm_KEYBYTES as usize;
+pub const CRYPTO_AEAD_CHACHA20POLY1305_KEY_BYTES: usize = crypto_aead_chacha20poly1305_KEYBYTES as usize;
+pub const CRYPTO_AEAD_CHACHA20POLY1305_IETF_KEY_BYTES: usize = crypto_aead_chacha20poly1305_ietf_KEYBYTES as usize;
+pub const CRYPTO_AEAD_XCHACHA20POLY1305_IETF_KEY_BYTES: usize = crypto_aead_xchacha20poly1305_ietf_KEYBYTES as usize;
+pub const CRYPTO_STREAM_XSALSA20_KEY_BYTES: usize = crypto_stream_xsalsa20_KEYBYTES as usize;
+pub const CRYPTO_BOX_CURVE25519XSALSA20POLY1305_PK_BYTES: usize = crypto_box_curve25519xsalsa20poly1305_PUBLICKEYBYTES as usize;
+pub const CRYPTO_BOX_CURVE25519XSALSA20POLY1305_SK_BYTES: usize = crypto_box_curve25519xsalsa20poly1305_SECRETKEYBYTES as usize;
 pub const CRYPTO_NONCE_BYTES: usize = 24;
 pub const CRYPTO_NONCE_HEX: usize = 48;
 pub const CRYPTO_BOX_BEFORE_NM_BYTES: usize = crypto_box_BEFORENMBYTES as usize;
 pub const CRYPTO_SECRET_BOX_NONCE_BYTES: usize = crypto_secretbox_NONCEBYTES as usize;
+pub const CRYPTO_SECRETBOX_KEY_BYTES: usize = crypto_secretbox_KEYBYTES as usize;
+pub const CRYPTO_STREAM_CHACHA20_KEY_BYTES: usize = crypto_stream_chacha20_KEYBYTES as usize;
+pub const CRYPTO_STREAM_CHACHA20_NONCE_BYTES: usize = crypto_stream_chacha20_NONCEBYTES as usize;
+pub const CRYPTO_STREAM_CHACHA20_IETF_KEY_BYTES: usize = crypto_stream_chacha20_ietf_KEYBYTES as usize;
+pub const CRYPTO_STREAM_CHACHA20_IETF_NONCE_BYTES: usize = crypto_stream_chacha20_ietf_NONCEBYTES as usize;
+pub const CRYPTO_SECRETSTREAM_XCHACHA20POLY1305_KEY_BYTES: usize = crypto_secretstream_xchacha20poly1305_KEYBYTES as usize;
+pub const CRYPTO_STREAM_KEY_BYTES: usize = crypto_stream_KEYBYTES as usize;
+pub const CRYPTO_STREAM_NONCE_BYTES: usize = crypto_stream_NONCEBYTES as usize;
+pub const CRYPTO_STREAM_XCHACHA20_KEY_BYTES: usize = crypto_stream_xchacha20_KEYBYTES as usize;
+pub const CRYPTO_STREAM_XCHACHA20_NONCE_BYTES: usize = crypto_stream_xchacha20_NONCEBYTES as usize;
+pub const CRYPTO_SECRETBOX_XCHACHA20POLY1305_KEY_BYTES: usize = crypto_secretbox_xchacha20poly1305_KEYBYTES as usize;
+pub const CRYPTO_SECRETBOX_XCHACHA20POLY1305_NONCE_BYTES: usize = crypto_secretbox_xchacha20poly1305_NONCEBYTES as usize;
+pub const CRYPTO_SECRETBOX_XCHACHA20POLY1305_MAC_BYTES: usize = crypto_secretbox_xchacha20poly1305_MACBYTES as usize;
 
 #[derive(Debug)]
 pub struct KeyPair {
@@ -30,9 +54,9 @@ pub struct SessionKey {
     pub tx: Vec<u8>,
 }
 
-pub fn crypto_kx_keypair() -> KeyPair {
-    let mut pk: [u8; CRYPTO_KX_PK_BYTES] = [0; CRYPTO_KX_PK_BYTES];
-    let mut sk: [u8; CRYPTO_KX_SK_BYTES] = [0; CRYPTO_KX_SK_BYTES];
+pub fn crypto_kx_keypair(size: usize) -> KeyPair {
+    let mut pk: Vec<u8> = vec![0; size];
+    let mut sk: Vec<u8> = vec![0; size];
 
     unsafe {
         libsodium_sys::crypto_kx_keypair(pk.as_mut_ptr(), sk.as_mut_ptr());
@@ -152,6 +176,41 @@ pub fn crypto_stream_chacha20_xor(
     return result == 0;
 }
 
+pub fn crypto_aead_chacha20poly1305_encrypt(
+    message: Vec<u8>,
+    additional_data: Vec<u8>,
+    nonce: Vec<u8>,
+    key: Vec<u8>,
+) -> Vec<u8> {
+    // Determine the size of the ciphertext, which is the size of the message plus the overhead
+    let ciphertext_size = message.len() + libsodium_sys::crypto_aead_chacha20poly1305_ABYTES as usize;
+
+    // Create a mutable vector to hold the ciphertext
+    let mut ciphertext: Vec<u8> = vec![0; ciphertext_size];
+
+    // Call crypto_aead_chacha20poly1305_encrypt to encrypt the message
+    let result = unsafe {
+        libsodium_sys::crypto_aead_chacha20poly1305_encrypt(
+            ciphertext.as_mut_ptr(),
+            std::ptr::null_mut(), // clen_p (output length) is not needed
+            message.as_ptr(),
+            message.len() as libc::c_ulonglong,
+            additional_data.as_ptr(),
+            additional_data.len() as libc::c_ulonglong,
+            std::ptr::null(), // nsec (not needed)
+            nonce.as_ptr(),
+            key.as_ptr(),
+        )
+    };
+
+    if result != 0 {
+        // An error occurred during encryption; return an empty vector
+        return vec![];
+    }
+
+    ciphertext
+}
+
 pub fn bin_to_hex(data: Vec<u8>) -> String {
     let len = data.len();
     let mut hex_output: Vec<c_char> = vec![0; 2 * len + 1];
@@ -243,7 +302,7 @@ mod tests {
 
     #[test]
     fn test_gen_keypair() {
-        let keypair = crypto_kx_keypair();
+        let keypair = crypto_kx_keypair(CRYPTO_KX_BYTES);
         println!("{:?}", &keypair.pk.len());
         println!("{:?}", &keypair.sk.len());
         println!("{:?}", &keypair);
@@ -251,7 +310,7 @@ mod tests {
 
     #[test]
     fn test_bin_to_hex() {
-        let keypair = crypto_kx_keypair();
+        let keypair = crypto_kx_keypair(CRYPTO_KX_BYTES);
         let pk = keypair.pk;
         let sk = keypair.sk;
         let pk_hex = bin_to_hex(pk);
@@ -280,8 +339,8 @@ mod tests {
 
     #[test]
     fn test_crypto_box_beforenm() {
-        let client_keypair = crypto_kx_keypair();
-        let server_keypair = crypto_kx_keypair();
+        let client_keypair = crypto_kx_keypair(CRYPTO_KX_BYTES);
+        let server_keypair = crypto_kx_keypair(CRYPTO_KX_BYTES);
         let kx_server_shared_key = KeyPair {
             pk: client_keypair.pk,
             sk: server_keypair.sk,
@@ -301,8 +360,8 @@ mod tests {
 
     #[test]
     fn test_crypto_kx_client_and_server_session_keys() {
-        let client_keypair = crypto_kx_keypair();
-        let server_keypair = crypto_kx_keypair();
+        let client_keypair = crypto_kx_keypair(CRYPTO_KX_BYTES);
+        let server_keypair = crypto_kx_keypair(CRYPTO_KX_BYTES);
 
         let kx_client_session_key = crypto_kx_client_session_keys(
             client_keypair.pk.clone(),
