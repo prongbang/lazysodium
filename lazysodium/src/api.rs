@@ -1,3 +1,4 @@
+use std::ptr;
 use libc::{c_char, c_uchar};
 use libsodium_sys::{crypto_aead_aes256gcm_KEYBYTES, crypto_aead_chacha20poly1305_ABYTES, crypto_aead_chacha20poly1305_ietf_KEYBYTES, crypto_aead_chacha20poly1305_IETF_KEYBYTES, crypto_aead_chacha20poly1305_KEYBYTES, crypto_aead_chacha20poly1305_NPUBBYTES, crypto_aead_chacha20poly1305_NSECBYTES, crypto_aead_xchacha20poly1305_ietf_KEYBYTES, crypto_auth_hmacsha512_KEYBYTES, crypto_box_BEFORENMBYTES, crypto_box_curve25519xsalsa20poly1305_PUBLICKEYBYTES, crypto_box_curve25519xsalsa20poly1305_SECRETKEYBYTES, crypto_box_PUBLICKEYBYTES, crypto_box_SECRETKEYBYTES, crypto_kx_PUBLICKEYBYTES, crypto_kx_SECRETKEYBYTES, crypto_kx_SESSIONKEYBYTES, crypto_secretbox_KEYBYTES, crypto_secretbox_NONCEBYTES, crypto_secretbox_xchacha20poly1305_KEYBYTES, crypto_secretbox_xchacha20poly1305_MACBYTES, crypto_secretbox_xchacha20poly1305_NONCEBYTES, crypto_secretstream_xchacha20poly1305_KEYBYTES, crypto_stream_chacha20_ietf_KEYBYTES, crypto_stream_chacha20_ietf_NONCEBYTES, crypto_stream_chacha20_KEYBYTES, crypto_stream_chacha20_NONCEBYTES, crypto_stream_KEYBYTES, crypto_stream_NONCEBYTES, crypto_stream_xchacha20_KEYBYTES, crypto_stream_xchacha20_NONCEBYTES, crypto_stream_xsalsa20_KEYBYTES};
 
@@ -184,9 +185,9 @@ pub fn crypto_stream_chacha20_xor(
 
 pub fn crypto_aead_chacha20poly1305_encrypt(
     message: Vec<u8>,
-    additional_data: Vec<u8>,
     nonce: Vec<u8>,
     key: Vec<u8>,
+    additional_data: Vec<u8>,
 ) -> Vec<u8> {
     // Determine the size of the ciphertext, which is the size of the message plus the overhead
     let ciphertext_size = message.len() + CRYPTO_AEAD_CHACHA20POLY1305_ABYTES;
@@ -203,7 +204,7 @@ pub fn crypto_aead_chacha20poly1305_encrypt(
             message.len() as libc::c_ulonglong,
             additional_data.as_ptr(),
             additional_data.len() as libc::c_ulonglong,
-            std::ptr::null(), // nsec (not needed)
+            ptr::null(), // nsec (not needed)
             nonce.as_ptr(),
             key.as_ptr(),
         )
@@ -215,6 +216,43 @@ pub fn crypto_aead_chacha20poly1305_encrypt(
     }
 
     ciphertext
+}
+
+pub fn crypto_aead_chacha20poly1305_decrypt(
+    ciphertext: Vec<u8>,
+    nonce: Vec<u8>,
+    key: Vec<u8>,
+    additional_data: Vec<u8>,
+) -> Vec<u8> {
+    // Determine the maximum size of the plaintext, which is the size of the ciphertext minus the overhead
+    let plaintext_max_size = ciphertext.len() - CRYPTO_AEAD_CHACHA20POLY1305_ABYTES;
+
+    // Create a mutable vector to hold the plaintext with the maximum possible size
+    let mut plaintext: Vec<u8> = vec![0; plaintext_max_size];
+
+    let mut mlen = 0u64;
+
+    // Call crypto_aead_chacha20poly1305_decrypt to decrypt the ciphertext
+    let result = unsafe {
+        libsodium_sys::crypto_aead_chacha20poly1305_decrypt(
+            plaintext.as_mut_ptr(),
+            &mut mlen,
+            ptr::null_mut(), // nsec (output not needed)
+            ciphertext.as_ptr(),
+            ciphertext.len() as libc::c_ulonglong,
+            additional_data.as_ptr(),
+            additional_data.len() as libc::c_ulonglong,
+            nonce.as_ptr(),
+            key.as_ptr(),
+        )
+    };
+
+    if result == 0 {
+        // Decryption was successful; resize the plaintext vector to the actual length
+        plaintext.resize(mlen as usize, 0);
+    }
+
+    plaintext
 }
 
 pub fn bin_to_hex(data: Vec<u8>) -> String {
@@ -417,7 +455,7 @@ mod tests {
     }
 
     #[test]
-    fn test_crypto_aead_chacha20poly1305_encrypt() {
+    fn test_crypto_aead_chacha20poly1305_encrypt_and_decrypt() {
         let nonce_byte = random_bytes_buf(CRYPTO_AEAD_CHACHA20POLY1305_NPUB_BYTES);
         let client_keypair = crypto_kx_keypair(CRYPTO_AEAD_CHACHA20POLY1305_KEY_BYTES, CRYPTO_AEAD_CHACHA20POLY1305_KEY_BYTES);
         let server_keypair = crypto_kx_keypair(CRYPTO_AEAD_CHACHA20POLY1305_KEY_BYTES, CRYPTO_AEAD_CHACHA20POLY1305_KEY_BYTES);
@@ -425,19 +463,37 @@ mod tests {
             pk: client_keypair.pk,
             sk: server_keypair.sk,
         };
+        let kx_client_shared_key = KeyPair {
+            pk: server_keypair.pk,
+            sk: client_keypair.sk,
+        };
         let kx_server_shared_key_bytes = crypto_box_beforenm(kx_server_shared_key);
+        let kx_client_shared_key_bytes = crypto_box_beforenm(kx_client_shared_key);
 
         let message = "Lazysodium";
         let message_bytes = message.as_bytes().to_vec();
         let additional_data: Vec<u8> = vec![];
+
+        // Encrypt
         let cipher_bytes = crypto_aead_chacha20poly1305_encrypt(
-            message_bytes,
-            additional_data,
-            nonce_byte,
+            message_bytes.clone(),
+            nonce_byte.clone(),
             kx_server_shared_key_bytes,
+            additional_data.clone(),
         );
-        let ciphertext = bin_to_hex(cipher_bytes);
+        let ciphertext = bin_to_hex(cipher_bytes.clone());
         println!("{}", ciphertext);
+
+        // Decrypt
+        let plain_bytes = crypto_aead_chacha20poly1305_decrypt(
+            cipher_bytes.clone(),
+            nonce_byte.clone(),
+            kx_client_shared_key_bytes,
+            additional_data.clone(),
+        );
+        let plaintext = String::from_utf8(plain_bytes).unwrap();
+        println!("{}", &plaintext);
+        assert_eq!(plaintext, message);
     }
 
     #[test]
