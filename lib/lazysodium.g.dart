@@ -228,6 +228,32 @@ class LazysodiumImpl implements Lazysodium {
         argNames: ["data"],
       );
 
+  Future<Uint8List> cryptoSecretboxXchacha20Poly1305Easy(
+      {required Uint8List message,
+      required Uint8List nonce,
+      required Uint8List key,
+      dynamic hint}) {
+    var arg0 = _platform.api2wire_uint_8_list(message);
+    var arg1 = _platform.api2wire_uint_8_list(nonce);
+    var arg2 = _platform.api2wire_uint_8_list(key);
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) => _platform.inner
+          .wire_crypto_secretbox_xchacha20poly1305_easy(
+              port_, arg0, arg1, arg2),
+      parseSuccessData: _wire2api_uint_8_list,
+      constMeta: kCryptoSecretboxXchacha20Poly1305EasyConstMeta,
+      argValues: [message, nonce, key],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta
+      get kCryptoSecretboxXchacha20Poly1305EasyConstMeta =>
+          const FlutterRustBridgeTaskConstMeta(
+            debugName: "crypto_secretbox_xchacha20poly1305_easy",
+            argNames: ["message", "nonce", "key"],
+          );
+
   Future<Uint8List> hexToBin({required String hex, dynamic hint}) {
     var arg0 = _platform.api2wire_String(hex);
     return _platform.executeNormal(FlutterRustBridgeTask(
@@ -698,6 +724,33 @@ class LazysodiumWire implements FlutterRustBridgeWireBase {
               ffi.Int64, ffi.Pointer<wire_uint_8_list>)>>('wire_bin_to_hex');
   late final _wire_bin_to_hex = _wire_bin_to_hexPtr
       .asFunction<void Function(int, ffi.Pointer<wire_uint_8_list>)>();
+
+  void wire_crypto_secretbox_xchacha20poly1305_easy(
+    int port_,
+    ffi.Pointer<wire_uint_8_list> message,
+    ffi.Pointer<wire_uint_8_list> nonce,
+    ffi.Pointer<wire_uint_8_list> key,
+  ) {
+    return _wire_crypto_secretbox_xchacha20poly1305_easy(
+      port_,
+      message,
+      nonce,
+      key,
+    );
+  }
+
+  late final _wire_crypto_secretbox_xchacha20poly1305_easyPtr = _lookup<
+          ffi.NativeFunction<
+              ffi.Void Function(
+                  ffi.Int64,
+                  ffi.Pointer<wire_uint_8_list>,
+                  ffi.Pointer<wire_uint_8_list>,
+                  ffi.Pointer<wire_uint_8_list>)>>(
+      'wire_crypto_secretbox_xchacha20poly1305_easy');
+  late final _wire_crypto_secretbox_xchacha20poly1305_easy =
+      _wire_crypto_secretbox_xchacha20poly1305_easyPtr.asFunction<
+          void Function(int, ffi.Pointer<wire_uint_8_list>,
+              ffi.Pointer<wire_uint_8_list>, ffi.Pointer<wire_uint_8_list>)>();
 
   void wire_hex_to_bin(
     int port_,

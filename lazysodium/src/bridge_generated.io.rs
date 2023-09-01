@@ -74,6 +74,16 @@ pub extern "C" fn wire_bin_to_hex(port_: i64, data: *mut wire_uint_8_list) {
 }
 
 #[no_mangle]
+pub extern "C" fn wire_crypto_secretbox_xchacha20poly1305_easy(
+    port_: i64,
+    message: *mut wire_uint_8_list,
+    nonce: *mut wire_uint_8_list,
+    key: *mut wire_uint_8_list,
+) {
+    wire_crypto_secretbox_xchacha20poly1305_easy_impl(port_, message, nonce, key)
+}
+
+#[no_mangle]
 pub extern "C" fn wire_hex_to_bin(port_: i64, hex: *mut wire_uint_8_list) {
     wire_hex_to_bin_impl(port_, hex)
 }

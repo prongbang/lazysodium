@@ -274,6 +274,38 @@ pub fn bin_to_hex(data: Vec<u8>) -> String {
     hex_string
 }
 
+pub fn crypto_secretbox_xchacha20poly1305_easy(
+    message: Vec<u8>,
+    nonce: Vec<u8>,
+    key: Vec<u8>,
+) -> Vec<u8> {
+    // Determine the size of the ciphertext, which is the size of the message plus the overhead
+    let ciphertext_size = message.len();
+
+    // Create a mutable vector to hold the ciphertext
+    let mut ciphertext: Vec<u8> = vec![0; ciphertext_size];
+
+    // Call crypto_secretbox_xchacha20poly1305_easy to encrypt the message
+    let result = unsafe {
+        libsodium_sys::crypto_secretbox_xchacha20poly1305_easy(
+            ciphertext.as_mut_ptr(),
+            message.as_ptr(),
+            message.len() as libc::c_ulonglong,
+            nonce.as_ptr(),
+            key.as_ptr(),
+        )
+    };
+
+    if result == 0 {
+        // Encryption was successful
+        ciphertext
+    } else {
+        // An error occurred during encryption; return an empty vector
+        vec![]
+    }
+}
+
+
 pub fn hex_to_bin(hex: String) -> Vec<u8> {
     // Determine the expected maximum length of the binary output
     let max_binary_len = hex.len() / 2; // Two hexadecimal characters represent one byte

@@ -70,6 +70,15 @@ abstract class Lazysodium {
 
   FlutterRustBridgeTaskConstMeta get kBinToHexConstMeta;
 
+  Future<Uint8List> cryptoSecretboxXchacha20Poly1305Easy(
+      {required Uint8List message,
+      required Uint8List nonce,
+      required Uint8List key,
+      dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta
+      get kCryptoSecretboxXchacha20Poly1305EasyConstMeta;
+
   Future<Uint8List> hexToBin({required String hex, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kHexToBinConstMeta;
