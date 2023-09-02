@@ -116,6 +116,12 @@
       "languageVersion": "3.0"
     },
     {
+      "name": "flutter_web_plugins",
+      "rootUri": "file:///Users/11283991/Development/Flutter/flutter/packages/flutter_web_plugins",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
       "name": "fuchsia_remote_debug_protocol",
       "rootUri": "file:///Users/11283991/Development/Flutter/flutter/packages/fuchsia_remote_debug_protocol",
       "packageUri": "lib/",
@@ -362,7 +368,7 @@
       "languageVersion": "3.1"
     }
   ],
-  "generated": "2023-08-31T16:51:44.259165Z",
+  "generated": "2023-09-02T08:27:53.470785Z",
   "generator": "pub",
   "generatorVersion": "3.1.0"
 }

@@ -40,16 +40,19 @@ fn wire_crypto_kx_keypair_impl(
         },
     )
 }
-fn wire_crypto_box_beforenm_impl(port_: MessagePort, keypair: impl Wire2Api<KeyPair> + UnwindSafe) {
+fn wire_crypto_box_before_nm_impl(
+    port_: MessagePort,
+    keypair: impl Wire2Api<KeyPair> + UnwindSafe,
+) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, Vec<u8>>(
         WrapInfo {
-            debug_name: "crypto_box_beforenm",
+            debug_name: "crypto_box_before_nm",
             port: Some(port_),
             mode: FfiCallMode::Normal,
         },
         move || {
             let api_keypair = keypair.wire2api();
-            move |task_callback| Ok(crypto_box_beforenm(api_keypair))
+            move |task_callback| Ok(crypto_box_before_nm(api_keypair))
         },
     )
 }
@@ -71,8 +74,7 @@ fn wire_crypto_box_beforenm_hex_impl(
 }
 fn wire_crypto_kx_client_session_keys_impl(
     port_: MessagePort,
-    client_pk: impl Wire2Api<Vec<u8>> + UnwindSafe,
-    client_sk: impl Wire2Api<Vec<u8>> + UnwindSafe,
+    client_keypair: impl Wire2Api<KeyPair> + UnwindSafe,
     server_pk: impl Wire2Api<Vec<u8>> + UnwindSafe,
 ) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, SessionKey>(
@@ -82,13 +84,11 @@ fn wire_crypto_kx_client_session_keys_impl(
             mode: FfiCallMode::Normal,
         },
         move || {
-            let api_client_pk = client_pk.wire2api();
-            let api_client_sk = client_sk.wire2api();
+            let api_client_keypair = client_keypair.wire2api();
             let api_server_pk = server_pk.wire2api();
             move |task_callback| {
                 Ok(crypto_kx_client_session_keys(
-                    api_client_pk,
-                    api_client_sk,
+                    api_client_keypair,
                     api_server_pk,
                 ))
             }
@@ -97,8 +97,7 @@ fn wire_crypto_kx_client_session_keys_impl(
 }
 fn wire_crypto_kx_server_session_keys_impl(
     port_: MessagePort,
-    server_pk: impl Wire2Api<Vec<u8>> + UnwindSafe,
-    server_sk: impl Wire2Api<Vec<u8>> + UnwindSafe,
+    server_keypair: impl Wire2Api<KeyPair> + UnwindSafe,
     client_pk: impl Wire2Api<Vec<u8>> + UnwindSafe,
 ) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, SessionKey>(
@@ -108,13 +107,11 @@ fn wire_crypto_kx_server_session_keys_impl(
             mode: FfiCallMode::Normal,
         },
         move || {
-            let api_server_pk = server_pk.wire2api();
-            let api_server_sk = server_sk.wire2api();
+            let api_server_keypair = server_keypair.wire2api();
             let api_client_pk = client_pk.wire2api();
             move |task_callback| {
                 Ok(crypto_kx_server_session_keys(
-                    api_server_pk,
-                    api_server_sk,
+                    api_server_keypair,
                     api_client_pk,
                 ))
             }

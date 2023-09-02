@@ -101,18 +101,16 @@ intptr_t init_frb_dart_api_dl(void *obj);
 
 void wire_crypto_kx_keypair(int64_t port_, uintptr_t pk_size, uintptr_t sk_size);
 
-void wire_crypto_box_beforenm(int64_t port_, struct wire_KeyPair *keypair);
+void wire_crypto_box_before_nm(int64_t port_, struct wire_KeyPair *keypair);
 
 void wire_crypto_box_beforenm_hex(int64_t port_, struct wire_KeyPair *keypair);
 
 void wire_crypto_kx_client_session_keys(int64_t port_,
-                                        struct wire_uint_8_list *client_pk,
-                                        struct wire_uint_8_list *client_sk,
+                                        struct wire_KeyPair *client_keypair,
                                         struct wire_uint_8_list *server_pk);
 
 void wire_crypto_kx_server_session_keys(int64_t port_,
-                                        struct wire_uint_8_list *server_pk,
-                                        struct wire_uint_8_list *server_sk,
+                                        struct wire_KeyPair *server_keypair,
                                         struct wire_uint_8_list *client_pk);
 
 void wire_crypto_stream_chacha20_xor(int64_t port_,
@@ -156,7 +154,7 @@ void free_WireSyncReturn(WireSyncReturn ptr);
 static int64_t dummy_method_to_enforce_bundling(void) {
     int64_t dummy_var = 0;
     dummy_var ^= ((int64_t) (void*) wire_crypto_kx_keypair);
-    dummy_var ^= ((int64_t) (void*) wire_crypto_box_beforenm);
+    dummy_var ^= ((int64_t) (void*) wire_crypto_box_before_nm);
     dummy_var ^= ((int64_t) (void*) wire_crypto_box_beforenm_hex);
     dummy_var ^= ((int64_t) (void*) wire_crypto_kx_client_session_keys);
     dummy_var ^= ((int64_t) (void*) wire_crypto_kx_server_session_keys);

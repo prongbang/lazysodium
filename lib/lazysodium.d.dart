@@ -14,25 +14,23 @@ abstract class Lazysodium {
 
   FlutterRustBridgeTaskConstMeta get kCryptoKxKeypairConstMeta;
 
-  Future<Uint8List> cryptoBoxBeforenm({required KeyPair keypair, dynamic hint});
+  Future<Uint8List> cryptoBoxBeforeNm({required KeyPair keypair, dynamic hint});
 
-  FlutterRustBridgeTaskConstMeta get kCryptoBoxBeforenmConstMeta;
+  FlutterRustBridgeTaskConstMeta get kCryptoBoxBeforeNmConstMeta;
 
   Future<String> cryptoBoxBeforenmHex({required KeyPair keypair, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kCryptoBoxBeforenmHexConstMeta;
 
   Future<SessionKey> cryptoKxClientSessionKeys(
-      {required Uint8List clientPk,
-      required Uint8List clientSk,
+      {required KeyPair clientKeypair,
       required Uint8List serverPk,
       dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kCryptoKxClientSessionKeysConstMeta;
 
   Future<SessionKey> cryptoKxServerSessionKeys(
-      {required Uint8List serverPk,
-      required Uint8List serverSk,
+      {required KeyPair serverKeypair,
       required Uint8List clientPk,
       dynamic hint});
 

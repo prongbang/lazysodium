@@ -7,8 +7,8 @@ pub extern "C" fn wire_crypto_kx_keypair(port_: i64, pk_size: usize, sk_size: us
 }
 
 #[no_mangle]
-pub extern "C" fn wire_crypto_box_beforenm(port_: i64, keypair: *mut wire_KeyPair) {
-    wire_crypto_box_beforenm_impl(port_, keypair)
+pub extern "C" fn wire_crypto_box_before_nm(port_: i64, keypair: *mut wire_KeyPair) {
+    wire_crypto_box_before_nm_impl(port_, keypair)
 }
 
 #[no_mangle]
@@ -19,21 +19,19 @@ pub extern "C" fn wire_crypto_box_beforenm_hex(port_: i64, keypair: *mut wire_Ke
 #[no_mangle]
 pub extern "C" fn wire_crypto_kx_client_session_keys(
     port_: i64,
-    client_pk: *mut wire_uint_8_list,
-    client_sk: *mut wire_uint_8_list,
+    client_keypair: *mut wire_KeyPair,
     server_pk: *mut wire_uint_8_list,
 ) {
-    wire_crypto_kx_client_session_keys_impl(port_, client_pk, client_sk, server_pk)
+    wire_crypto_kx_client_session_keys_impl(port_, client_keypair, server_pk)
 }
 
 #[no_mangle]
 pub extern "C" fn wire_crypto_kx_server_session_keys(
     port_: i64,
-    server_pk: *mut wire_uint_8_list,
-    server_sk: *mut wire_uint_8_list,
+    server_keypair: *mut wire_KeyPair,
     client_pk: *mut wire_uint_8_list,
 ) {
-    wire_crypto_kx_server_session_keys_impl(port_, server_pk, server_sk, client_pk)
+    wire_crypto_kx_server_session_keys_impl(port_, server_keypair, client_pk)
 }
 
 #[no_mangle]

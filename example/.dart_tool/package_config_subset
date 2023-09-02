@@ -230,6 +230,10 @@ flutter_test
 3.0
 file:///Users/11283991/Development/Flutter/flutter/packages/flutter_test/
 file:///Users/11283991/Development/Flutter/flutter/packages/flutter_test/lib/
+flutter_web_plugins
+3.0
+file:///Users/11283991/Development/Flutter/flutter/packages/flutter_web_plugins/
+file:///Users/11283991/Development/Flutter/flutter/packages/flutter_web_plugins/lib/
 fuchsia_remote_debug_protocol
 3.0
 file:///Users/11283991/Development/Flutter/flutter/packages/fuchsia_remote_debug_protocol/

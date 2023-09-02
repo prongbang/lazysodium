@@ -3,3 +3,19 @@ nightly:
 
 stable:
 	rustup default stable
+
+before_build_android:
+	rustup target add \
+        aarch64-linux-android \
+        armv7-linux-androideabi \
+        x86_64-linux-android \
+        i686-linux-android
+
+build_android:
+	export ANDROID_NDK_HOME=$HOME/Library/Android/sdk/ndk/25.2.9519653
+	cargo ndk \
+		-t armeabi-v7a \
+		-t arm64-v8a \
+		-t x86_64 \
+		-t x86 \
+		-o ../android/app/src/main/jniLibs build --release

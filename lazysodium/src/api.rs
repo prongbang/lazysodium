@@ -37,17 +37,10 @@ pub const CRYPTO_SECRETBOX_XCHACHA20POLY1305_KEY_BYTES: usize = crypto_secretbox
 pub const CRYPTO_SECRETBOX_XCHACHA20POLY1305_NONCE_BYTES: usize = crypto_secretbox_xchacha20poly1305_NONCEBYTES as usize;
 pub const CRYPTO_SECRETBOX_XCHACHA20POLY1305_MAC_BYTES: usize = crypto_secretbox_xchacha20poly1305_MACBYTES as usize;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct KeyPair {
     pub pk: Vec<u8>,
     pub sk: Vec<u8>,
-}
-
-#[derive(Debug)]
-pub struct KeyExchange {
-    pub pk: Vec<u8>,
-    pub sk: Vec<u8>,
-    pub shared_key: Vec<u8>,
 }
 
 #[derive(Debug)]
@@ -70,7 +63,7 @@ pub fn crypto_kx_keypair(pk_size: usize, sk_size: usize) -> KeyPair {
     }
 }
 
-pub fn crypto_box_beforenm(keypair: KeyPair) -> Vec<u8> {
+pub fn crypto_box_before_nm(keypair: KeyPair) -> Vec<u8> {
     // Create a mutable vector to store the shared secret key (precomputed)
     let mut shared_key: Vec<u8> = vec![0; CRYPTO_BOX_BEFORE_NM_BYTES];
 
@@ -93,18 +86,17 @@ pub fn crypto_box_beforenm(keypair: KeyPair) -> Vec<u8> {
 }
 
 pub fn crypto_box_beforenm_hex(keypair: KeyPair) -> String {
-    let byte = crypto_box_beforenm(keypair);
+    let byte = crypto_box_before_nm(keypair);
     let hex = bin_to_hex(byte);
     hex
 }
 
 pub fn crypto_kx_client_session_keys(
-    client_pk: Vec<u8>,
-    client_sk: Vec<u8>,
+    client_keypair: KeyPair,
     server_pk: Vec<u8>,
 ) -> SessionKey {
     // Create mutable vectors to store the session keys
-    let len = client_sk.len();
+    let len = client_keypair.sk.len();
     let mut rx: Vec<u8> = vec![0; len];
     let mut tx: Vec<u8> = vec![0; len];
 
@@ -113,8 +105,8 @@ pub fn crypto_kx_client_session_keys(
         libsodium_sys::crypto_kx_client_session_keys(
             rx.as_mut_ptr() as *mut c_uchar,
             tx.as_mut_ptr() as *mut c_uchar,
-            client_pk.as_ptr() as *const c_uchar,
-            client_sk.as_ptr() as *const c_uchar,
+            client_keypair.pk.as_ptr() as *const c_uchar,
+            client_keypair.sk.as_ptr() as *const c_uchar,
             server_pk.as_ptr() as *const c_uchar,
         )
     };
@@ -129,12 +121,11 @@ pub fn crypto_kx_client_session_keys(
 }
 
 pub fn crypto_kx_server_session_keys(
-    server_pk: Vec<u8>,
-    server_sk: Vec<u8>,
+    server_keypair: KeyPair,
     client_pk: Vec<u8>,
 ) -> SessionKey {
     // Create mutable vectors to store the session keys
-    let len = server_sk.len();
+    let len = server_keypair.sk.len();
     let mut rx: Vec<u8> = vec![0; len];
     let mut tx: Vec<u8> = vec![0; len];
 
@@ -143,8 +134,8 @@ pub fn crypto_kx_server_session_keys(
         libsodium_sys::crypto_kx_server_session_keys(
             rx.as_mut_ptr() as *mut c_uchar,
             tx.as_mut_ptr() as *mut c_uchar,
-            server_pk.as_ptr() as *const c_uchar,
-            server_sk.as_ptr() as *const c_uchar,
+            server_keypair.pk.as_ptr() as *const c_uchar,
+            server_keypair.sk.as_ptr() as *const c_uchar,
             client_pk.as_ptr() as *const c_uchar,
         )
     };
@@ -199,7 +190,7 @@ pub fn crypto_aead_chacha20poly1305_encrypt(
     let result = unsafe {
         libsodium_sys::crypto_aead_chacha20poly1305_encrypt(
             ciphertext.as_mut_ptr(),
-            std::ptr::null_mut(), // clen_p (output length) is not needed
+            ptr::null_mut(), // clen_p (output length) is not needed
             message.as_ptr(),
             message.len() as libc::c_ulonglong,
             additional_data.as_ptr(),
@@ -269,7 +260,10 @@ pub fn bin_to_hex(data: Vec<u8>) -> String {
     }
 
     // Convert the C string to a Rust string
-    let hex_string = vec_to_string(hex_output);
+    let hex = hex_output.as_ptr();
+    let hex_string = unsafe { std::ffi::CStr::from_ptr(hex) }
+        .to_string_lossy()
+        .into_owned();
 
     hex_string
 }
@@ -314,9 +308,9 @@ pub fn hex_to_bin(hex: String) -> Vec<u8> {
     let mut binary_data: Vec<c_uchar> = vec![0; max_binary_len];
 
     // Declare variables for optional parameters
-    let ignore = std::ptr::null(); // No characters to ignore
+    let ignore = ptr::null(); // No characters to ignore
     let mut bin_len: usize = 0;
-    let mut hex_end: *const c_char = std::ptr::null();
+    let mut hex_end: *const c_char = ptr::null();
 
     // Convert the hexadecimal string to binary
     let result = unsafe {
@@ -364,12 +358,6 @@ pub fn random_nonce_hex() -> String {
     let bytes = random_bytes_buf(CRYPTO_NONCE_BYTES);
     let hex = bin_to_hex(bytes);
     return hex;
-}
-
-fn vec_to_string(hex_output: Vec<i8>) -> String {
-    unsafe { std::ffi::CStr::from_ptr(hex_output.as_ptr()) }
-        .to_string_lossy()
-        .into_owned()
 }
 
 #[cfg(test)]
@@ -425,8 +413,8 @@ mod tests {
             pk: server_keypair.pk,
             sk: client_keypair.sk,
         };
-        let kx_server_shared_key_bytes = crypto_box_beforenm(kx_server_shared_key);
-        let kx_client_shared_key_bytes = crypto_box_beforenm(kx_client_shared_key);
+        let kx_server_shared_key_bytes = crypto_box_before_nm(kx_server_shared_key);
+        let kx_client_shared_key_bytes = crypto_box_before_nm(kx_client_shared_key);
         let kx_server_shared_key_hex = bin_to_hex(kx_server_shared_key_bytes);
         let kx_client_shared_key_hex = bin_to_hex(kx_client_shared_key_bytes);
         println!("{:?}", &kx_server_shared_key_hex);
@@ -440,13 +428,11 @@ mod tests {
         let server_keypair = crypto_kx_keypair(CRYPTO_KX_PK_BYTES, CRYPTO_KX_SK_BYTES);
 
         let kx_client_session_key = crypto_kx_client_session_keys(
-            client_keypair.pk.clone(),
-            client_keypair.pk.clone(),
+            client_keypair.clone(),
             server_keypair.pk.clone(),
         );
         let kx_server_session_key = crypto_kx_server_session_keys(
-            server_keypair.pk.clone(),
-            server_keypair.pk.clone(),
+            server_keypair.clone(),
             client_keypair.pk.clone(),
         );
         let server_rx_hex = bin_to_hex(kx_client_session_key.rx);
@@ -499,8 +485,8 @@ mod tests {
             pk: server_keypair.pk,
             sk: client_keypair.sk,
         };
-        let kx_server_shared_key_bytes = crypto_box_beforenm(kx_server_shared_key);
-        let kx_client_shared_key_bytes = crypto_box_beforenm(kx_client_shared_key);
+        let kx_server_shared_key_bytes = crypto_box_before_nm(kx_server_shared_key);
+        let kx_client_shared_key_bytes = crypto_box_before_nm(kx_client_shared_key);
 
         let message = "Lazysodium";
         let message_bytes = message.as_bytes().to_vec();
