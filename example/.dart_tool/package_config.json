@@ -212,12 +212,6 @@
       "languageVersion": "2.12"
     },
     {
-      "name": "plugin_platform_interface",
-      "rootUri": "file:///Users/11283991/.pub-cache/hosted/pub.dev/plugin_platform_interface-2.1.6",
-      "packageUri": "lib/",
-      "languageVersion": "2.19"
-    },
-    {
       "name": "pointycastle",
       "rootUri": "file:///Users/11283991/.pub-cache/hosted/pub.dev/pointycastle-3.7.3",
       "packageUri": "lib/",
@@ -368,7 +362,7 @@
       "languageVersion": "3.1"
     }
   ],
-  "generated": "2023-09-02T08:27:53.470785Z",
+  "generated": "2023-09-02T15:18:34.683306Z",
   "generator": "pub",
   "generatorVersion": "3.1.0"
 }

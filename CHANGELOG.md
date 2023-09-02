@@ -1,3 +1,3 @@
-## 0.0.1
+## 1.0.0
 
-* TODO: Describe initial release.
+* Lazysodium is a comprehensive Flutter implementation of the Libsodium library.
