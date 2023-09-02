@@ -60,3 +60,7 @@ before_build_ios:
 build_ios:
 	export ANDROID_NDK_HOME=$HOME/Library/Android/sdk/ndk/25.2.9519653
 	cargo lipo --release && cp target/universal/release/liblazysodium.a ../ios/Runner
+
+copy_header_to_lazysodium:
+	cp -R libsodium-ios/include/sodium/ ~/Development/Flutter/Workspaces/lazysodium/sodium
+	cp -R libsodium-ios/include/sodium.h ~/Development/Flutter/Workspaces/lazysodium/libsodium.h
