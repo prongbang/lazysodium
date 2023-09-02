@@ -1,18 +1,18 @@
 import 'dart:ffi';
 import 'dart:io';
 
-import 'package:lazysodium/lazysodium.d.dart';
-import 'package:lazysodium/lazysodium.g.dart';
+import 'package:lazysodium/lazysodium.binding.dart';
 
-export 'lazysodium.d.dart';
-export 'lazysodium.g.dart';
+export 'lazysodium.binding.dart';
 
-class LazySodium {
+class Lazysodium extends LazysodiumBinding {
+  Lazysodium(super.dynamicLibrary);
+
   Future<String?> getPlatformVersion() async {
     return "";
   }
 
-  static Lazysodium instance() => LazysodiumImpl(_load());
+  static Lazysodium instance() => Lazysodium(_load());
 }
 
 final DynamicLibrary lazysodium = _load();
