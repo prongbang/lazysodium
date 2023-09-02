@@ -19,3 +19,11 @@ build_android:
 		-t x86_64 \
 		-t x86 \
 		-o ../android/app/src/main/jniLibs build --release
+
+before_build_ios:
+	rustup update
+	rustup target add aarch64-apple-ios x86_64-apple-ios
+
+build_ios:
+	export ANDROID_NDK_HOME=$HOME/Library/Android/sdk/ndk/25.2.9519653
+	cargo lipo --release && cp target/universal/release/liblazysodium.a ../ios/Runner

@@ -4,8 +4,12 @@ require:
 	cargo install cargo-xcode
 	cargo install cargo-ndk
 	cargo install cbindgen
+	cargo install cargo-lipo
 	dart pub global activate ffigen
 	arch -arm64 brew install llvm
+	arch -arm64 brew install pkg-config
+	arch -arm64 brew install cmake
+	arch -arm64 brew install libsodium
 
 new_project:
 	dart run flutter_rust_bridge:serve --crate lazysodium
@@ -20,13 +24,3 @@ gen:
 		--dart-output lib/lazysodium.g.dart \
 		--dart-decl-output lib/lazysodium.d.dart \
 		-c ios/Runner/lazysodium.h
-
-build_ios:
-	cargo lipo && cp target/universal/debug/liblazysodium.a ../ios/Runner
-
-build_android:
-	cargo build --target aarch64-linux-android --release
-	cargo build --target armv7-linux-androideabi --release
-	cargo build --target i686-linux-android --release
-	cargo build --target x86_64-linux-android --release
-	cargo build --target arm-linux-androideabi --release
