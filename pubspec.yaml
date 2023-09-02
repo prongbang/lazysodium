@@ -26,6 +26,16 @@ dev_dependencies:
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
+ffigen:
+  name: 'Lazysodium'
+  description: 'Bindings to libsodium'
+  output: 'lib/lazysodium.binding.dart'
+  headers:
+    entry-points:
+      - 'libsodium.h'
+    include-directives:
+      - '**/libsodium/**.h'
+
 # The following section is specific to Flutter packages.
 flutter:
   # This section identifies this Flutter project as a plugin project.
