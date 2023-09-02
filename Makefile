@@ -29,7 +29,7 @@ gen_dart:
 	dart run ffigen
 
 publish:
-	dart run publish
+	dart pub publish
 
 nightly:
 	rustup default nightly
