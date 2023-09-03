@@ -5,6 +5,7 @@ import 'package:lazysodium/lazysodium.binding.dart';
 
 export 'lazysodium.binding.dart';
 export 'lazysodium_extensions.dart';
+export 'kx/lazysodium_kx.dart';
 
 class Lazysodium extends LazysodiumBinding {
   Lazysodium(super.dynamicLibrary);
