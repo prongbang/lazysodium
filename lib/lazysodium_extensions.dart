@@ -21,9 +21,6 @@ extension LazysodiumExtension on LazysodiumBinding {
         out.add(buffer[i]);
       }
 
-      // Release the allocated buffer when done
-      arena.releaseAll();
-
       return Uint8List.fromList(out);
     });
   }
@@ -33,7 +30,7 @@ extension LazysodiumExtension on LazysodiumBinding {
       final binSize = bytes.length;
       final binPointer = arena<ffi.UnsignedChar>();
 
-      final buffer = arena<ffi.Char>();
+      final buffer = arena<ffi.Uint8>();
 
       // Copy the binary data into the allocated buffer
       for (var i = 0; i < binSize; i++) {
@@ -43,7 +40,8 @@ extension LazysodiumExtension on LazysodiumBinding {
       // Ensure enough space for the hex representation
       final hexMaxLen = (binSize * 2) + 1;
 
-      final result = sodium_bin2hex(buffer, hexMaxLen, binPointer, binSize);
+      final result = sodium_bin2hex(
+          buffer.cast<ffi.Char>(), hexMaxLen, binPointer, binSize);
 
       List<int> out = [];
       if (result != ffi.nullptr) {
@@ -51,14 +49,52 @@ extension LazysodiumExtension on LazysodiumBinding {
           out.add(result[i]);
         }
       } else {
-        debugPrint('Conversion failed.');
+        debugPrint('[Lazysodium] Conversion bin2Hex failed.');
       }
 
-      // Release the allocated buffer when done
-      arena.releaseAll();
-
-      return String.fromCharCodes(out);
+      return String.fromCharCodes(out.toList());
     });
+  }
+
+  Uint8List hex2Bin(String hexString) {
+    // Convert the hex string to a Dart string
+    final hexPointer = hexString.toNativeUtf8().cast<ffi.Char>();
+
+    // Allocate memory for the binary data
+    final binMaxLen = hexString.length ~/ 2;
+    final binPointer = calloc<ffi.Uint8>(binMaxLen);
+    final binLen = calloc<ffi.Size>();
+
+    // Call sodium_hex2bin to perform the conversion
+    final result = sodium_hex2bin(
+      binPointer.cast<ffi.UnsignedChar>(),
+      binMaxLen,
+      hexPointer,
+      hexString.length,
+      ffi.nullptr,
+      binLen,
+      ffi.nullptr,
+    );
+
+    List<int> output = [];
+    if (result == 0) {
+      final binData = binPointer.asTypedList(binLen.value);
+
+      // Clone the original list
+      output = List.from(binData);
+    } else {
+      debugPrint('[Lazysodium] Conversion hex2Bin failed.');
+    }
+
+    // Free allocated memory
+    calloc.free(binPointer);
+    calloc.free(binLen);
+    calloc.free(hexPointer);
+
+    if (result == 0) {
+      return Uint8List.fromList(output);
+    }
+    return Uint8List(0);
   }
 }
 

@@ -14,10 +14,14 @@ void main() {
 
     // When
     final nonceByte = lazysodium.randomBytesBuf(nonceSize);
-    final nonceHex = lazysodium.bin2Hex(nonceByte);
+    final nonceHex1 = lazysodium.bin2Hex(nonceByte);
+    final nonceBytes = lazysodium.hex2Bin(nonceHex1);
+    final nonceHex2 = lazysodium.bin2Hex(nonceBytes);
 
     // Then
-    expect(nonceHex.length, 48);
+    expect(nonceHex1.length, 48);
+    expect(nonceHex2.length, 48);
+    expect(nonceHex1, nonceHex2);
     expect(nonceSize, 24);
   });
 }
