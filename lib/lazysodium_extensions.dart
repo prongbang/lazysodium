@@ -4,7 +4,7 @@ import 'dart:ffi';
 import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:lazysodium/lazysodium.dart';
 
 extension LazysodiumExtension on LazysodiumBinding {

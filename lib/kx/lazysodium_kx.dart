@@ -1,6 +1,5 @@
-import 'dart:typed_data';
-
 import 'package:ffi/ffi.dart';
+import 'package:flutter/foundation.dart';
 import 'dart:ffi' as ffi;
 import 'package:lazysodium/lazysodium.dart';
 
@@ -33,7 +32,7 @@ extension LazysodiumKxExtension on LazysodiumBinding {
         ..pk = Uint8List.fromList(List.from(pkList))
         ..sk = Uint8List.fromList(List.from(skList));
     } else {
-      print('Keypair generation failed.');
+      debugPrint('[Lazysodium] Keypair generation failed.');
     }
 
     // Free allocated memory
