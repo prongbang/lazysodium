@@ -9,7 +9,7 @@ void main() {
   });
 
   test('Should return keypair when create keypair success', () {
-    // Should
+    // Given
     final pkSize = lazysodium.crypto_kx_publickeybytes();
     final skSize = lazysodium.crypto_kx_secretkeybytes();
 

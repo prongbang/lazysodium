@@ -26,34 +26,38 @@ extension LazysodiumExtension on LazysodiumBinding {
   }
 
   String bin2Hex(Uint8List bytes) {
-    return using<String>((Arena arena) {
-      final binSize = bytes.length;
-      final binPointer = arena<ffi.UnsignedChar>();
+    // Allocate memory for the hexadecimal representation
+    final hexMaxLen = bytes.length * 2 + 1;
+    final hexPointer = calloc<ffi.Char>(hexMaxLen);
+    final binPointer = calloc<ffi.Uint8>(bytes.length);
 
-      final buffer = arena<ffi.Uint8>();
+    // Copy the binary data into the allocated buffer
+    for (var i = 0; i < bytes.length; i++) {
+      binPointer.elementAt(i).value = bytes[i];
+    }
 
-      // Copy the binary data into the allocated buffer
-      for (var i = 0; i < binSize; i++) {
-        binPointer.elementAt(i).value = bytes[i];
+    // Convert binary data to hexadecimal
+    final result = sodium_bin2hex(
+      hexPointer,
+      hexMaxLen,
+      binPointer.cast<ffi.UnsignedChar>(),
+      bytes.length,
+    );
+
+    List<int> output = [];
+    if (result != ffi.nullptr) {
+      for (var i = 0; i < hexMaxLen - 1; i++) {
+        output.add(result[i]);
       }
+    } else {
+      debugPrint('[Lazysodium] Conversion bin2Hex failed.');
+    }
 
-      // Ensure enough space for the hex representation
-      final hexMaxLen = (binSize * 2) + 1;
+    // Free allocated memory for hexPointer
+    calloc.free(binPointer);
+    calloc.free(hexPointer);
 
-      final result = sodium_bin2hex(
-          buffer.cast<ffi.Char>(), hexMaxLen, binPointer, binSize);
-
-      List<int> out = [];
-      if (result != ffi.nullptr) {
-        for (var i = 0; i < hexMaxLen - 1; i++) {
-          out.add(result[i]);
-        }
-      } else {
-        debugPrint('[Lazysodium] Conversion bin2Hex failed.');
-      }
-
-      return String.fromCharCodes(out.toList());
-    });
+    return String.fromCharCodes(output.toList());
   }
 
   Uint8List hex2Bin(String hexString) {

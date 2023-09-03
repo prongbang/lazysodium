@@ -13,7 +13,7 @@ void main() {
   test(
     'Should has result when encrypt/decrypt crypto_stream_chacha20_xor success',
     () {
-      // Should
+      // Given
       final keypair = lazysodium.cryptoKxKeyPair();
       final nonce = lazysodium.randomBytesBuf(
         lazysodium.crypto_secretbox_noncebytes(),
