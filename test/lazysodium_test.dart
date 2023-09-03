@@ -1,4 +1,3 @@
-import 'package:ffi/ffi.dart' as ffi;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lazysodium/lazysodium.dart';
 
@@ -11,12 +10,14 @@ void main() {
 
   test('Should return nonce size when get nonce size success', () async {
     // Given
-    const secretBoxNonceBytes = 24;
+    final nonceSize = lazysodium.crypto_secretbox_noncebytes();
 
     // When
-    final size = lazysodium.crypto_secretbox_noncebytes();
+    final nonceByte = lazysodium.randomBytesBuf(nonceSize);
+    final nonceHex = lazysodium.bin2Hex(nonceByte);
 
     // Then
-    expect(size, secretBoxNonceBytes);
+    expect(nonceHex.length, 48);
+    expect(nonceSize, 24);
   });
 }
