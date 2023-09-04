@@ -8,7 +8,13 @@ Lazysodium is a comprehensive Flutter implementation of the [libsodium](https://
 
 ```yaml
 dependencies:
-  lazysodium: ^1.0.0
+  lazysodium: ^1.0.1
+```
+
+- Dart
+
+```dart
+Lazysodium lazysodium = Lazysodium.instance();
 ```
 
 ## Documentation

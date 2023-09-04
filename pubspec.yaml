@@ -1,6 +1,6 @@
 name: lazysodium
 description: Lazysodium is a comprehensive Flutter implementation of the Libsodium library.
-version: 1.0.0
+version: 1.0.1
 homepage: https://github.com/prongbang/lazysodium
 
 environment:
@@ -21,6 +21,10 @@ dev_dependencies:
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
+# Build library to file.
+# $ sh dist-build/ios.sh
+# $ cp -R libsodium-ios/include/sodium/ ~/Development/Flutter/Workspaces/lazysodium/sodium
+# $ cp -R libsodium-ios/include/sodium.h ~/Development/Flutter/Workspaces/lazysodium/libsodium.h
 
 ffigen:
   name: 'LazysodiumBinding'
@@ -52,7 +56,7 @@ ffigen:
     // See the License for the specific language governing permissions and
     // limitations under the License.
     // SPDX-License-Identifier: Apache-2.0
-  
+    
     // ignore_for_file: camel_case_types, non_constant_identifier_names
 
 # The following section is specific to Flutter packages.

@@ -12,10 +12,6 @@ export 'crypto/lazysodium_stream_chacha20_xor.dart';
 class Lazysodium extends LazysodiumBinding {
   Lazysodium(super.dynamicLibrary);
 
-  Future<String?> getPlatformVersion() async {
-    return "";
-  }
-
   static Lazysodium instance() => Lazysodium(_load());
 }
 
