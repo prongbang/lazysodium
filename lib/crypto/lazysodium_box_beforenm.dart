@@ -20,32 +20,29 @@ extension LazysodiumBoxBeforeNmExtension on LazysodiumBinding {
       secretKey.elementAt(i).value = keyPair.sk[i];
     }
 
-    // Call crypto_box_beforenm to compute the shared secret key
-    final result = crypto_box_beforenm(
-      sharedSecretKey.cast<ffi.UnsignedChar>(),
-      publicKey.cast<ffi.UnsignedChar>(),
-      secretKey.cast<ffi.UnsignedChar>(),
-    );
+    try {
+      // Call crypto_box_beforenm to compute the shared secret key
+      final result = crypto_box_beforenm(
+        sharedSecretKey.cast<ffi.UnsignedChar>(),
+        publicKey.cast<ffi.UnsignedChar>(),
+        secretKey.cast<ffi.UnsignedChar>(),
+      );
 
-    List<int> output = [];
-    if (result == 0) {
-      // Print the computed shared secret key
-      final sharedSecretKeyList =
-          sharedSecretKey.asTypedList(crypto_box_BEFORENMBYTES);
-      // Clone the original list
-      output = List.from(sharedSecretKeyList);
-    } else {
-      debugPrint('[Lazysodium] Shared secret key computation failed.');
+      if (result == 0) {
+        // Print the computed shared secret key
+        final sharedSecretKeyList =
+            sharedSecretKey.asTypedList(crypto_box_BEFORENMBYTES);
+        // Clone the original list
+        return Uint8List.fromList(List.from(sharedSecretKeyList));
+      } else {
+        debugPrint('[Lazysodium] Crypto box before nm failed.');
+        return Uint8List(0);
+      }
+    } finally {
+      // Free allocated memory
+      calloc.free(sharedSecretKey);
+      calloc.free(publicKey);
+      calloc.free(secretKey);
     }
-
-    // Free allocated memory
-    calloc.free(sharedSecretKey);
-    calloc.free(publicKey);
-    calloc.free(secretKey);
-
-    if (result == 0) {
-      return Uint8List.fromList(output);
-    }
-    return Uint8List(0);
   }
 }

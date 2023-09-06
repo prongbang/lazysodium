@@ -1,6 +1,6 @@
 name: lazysodium
 description: Lazysodium is a comprehensive Flutter implementation of the Libsodium library.
-version: 1.0.1
+version: 1.0.2
 homepage: https://github.com/prongbang/lazysodium
 
 environment:

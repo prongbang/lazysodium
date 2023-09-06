@@ -26,33 +26,30 @@ extension LazysodiumStreamChaCha20XorExtension on LazysodiumBinding {
       plaintextPointer.elementAt(i).value = message[i];
     }
 
-    // Call crypto_stream_chacha20 to generate the stream
-    final result = crypto_stream_chacha20_xor(
-      ciphertextPointer.cast<ffi.UnsignedChar>(),
-      plaintextPointer.cast<ffi.UnsignedChar>(),
-      message.length,
-      noncePointer.cast<ffi.UnsignedChar>(),
-      keyPointer.cast<ffi.UnsignedChar>(),
-    );
+    try {
+      // Call crypto_stream_chacha20 to generate the stream
+      final result = crypto_stream_chacha20_xor(
+        ciphertextPointer.cast<ffi.UnsignedChar>(),
+        plaintextPointer.cast<ffi.UnsignedChar>(),
+        message.length,
+        noncePointer.cast<ffi.UnsignedChar>(),
+        keyPointer.cast<ffi.UnsignedChar>(),
+      );
 
-    List<int> output = [];
-    if (result == 0) {
-      final ciphertextList = ciphertextPointer.asTypedList(message.length);
-      // Clone the original list
-      output = List.from(ciphertextList);
-    } else {
-      debugPrint('[Lazysodium] Stream generation failed.');
+      if (result == 0) {
+        final ciphertextList = ciphertextPointer.asTypedList(message.length);
+        // Clone the original list
+        return Uint8List.fromList(List.from(ciphertextList));
+      } else {
+        debugPrint('[Lazysodium] Crypto stream ChaCha20 failed.');
+        return Uint8List(0);
+      }
+    } finally {
+      // Free allocated memory
+      calloc.free(ciphertextPointer);
+      calloc.free(plaintextPointer);
+      calloc.free(noncePointer);
+      calloc.free(keyPointer);
     }
-
-    // Free allocated memory
-    calloc.free(ciphertextPointer);
-    calloc.free(plaintextPointer);
-    calloc.free(noncePointer);
-    calloc.free(keyPointer);
-
-    if (result == 0) {
-      return Uint8List.fromList(output);
-    }
-    return Uint8List(0);
   }
 }

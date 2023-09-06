@@ -1,3 +1,11 @@
+## 1.0.2
+
+* Adding a high-level function
+* - cryptoBoxEasy
+* - cryptoBoxOpenEasy
+* - cryptoSecretBoxEasy
+* - cryptoSecretBoxOpenEasy
+
 ## 1.0.1
 
 * Adding a high-level function

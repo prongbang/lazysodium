@@ -5,10 +5,11 @@ void main() {
   late Lazysodium lazysodium;
 
   setUp(() {
+    Lazysodium.init();
     lazysodium = Lazysodium.instance();
   });
 
-  test('Should return nonce size when get nonce size success', () async {
+  test('Should return nonce size when get nonce size success', () {
     // Given
     final nonceSize = lazysodium.crypto_secretbox_noncebytes();
 

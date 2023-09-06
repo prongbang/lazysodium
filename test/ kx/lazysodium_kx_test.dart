@@ -5,6 +5,7 @@ void main() {
   late Lazysodium lazysodium;
 
   setUp(() {
+    Lazysodium.init();
     lazysodium = Lazysodium.instance();
   });
 

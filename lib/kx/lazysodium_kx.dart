@@ -18,27 +18,28 @@ extension LazysodiumKxExtension on LazysodiumBinding {
     final publicKey = calloc<ffi.Uint8>(crypto_kx_PUBLICKEYBYTES);
     final secretKey = calloc<ffi.Uint8>(crypto_kx_SECRETKEYBYTES);
 
-    // Call crypto_kx_keypair to generate the keypair
-    final result = crypto_kx_keypair(
-      publicKey.cast<ffi.UnsignedChar>(),
-      secretKey.cast<ffi.UnsignedChar>(),
-    );
+    try {
+      // Call crypto_kx_keypair to generate the keypair
+      final result = crypto_kx_keypair(
+        publicKey.cast<ffi.UnsignedChar>(),
+        secretKey.cast<ffi.UnsignedChar>(),
+      );
 
-    if (result == 0) {
-      // You can access the keys like this:
-      final pkList = publicKey.asTypedList(crypto_kx_PUBLICKEYBYTES);
-      final skList = secretKey.asTypedList(crypto_kx_SECRETKEYBYTES);
-      keyPair
-        ..pk = Uint8List.fromList(List.from(pkList))
-        ..sk = Uint8List.fromList(List.from(skList));
-    } else {
-      debugPrint('[Lazysodium] Keypair generation failed.');
+      if (result == 0) {
+        // You can access the keys like this:
+        final pkList = publicKey.asTypedList(crypto_kx_PUBLICKEYBYTES);
+        final skList = secretKey.asTypedList(crypto_kx_SECRETKEYBYTES);
+        keyPair
+          ..pk = Uint8List.fromList(List.from(pkList))
+          ..sk = Uint8List.fromList(List.from(skList));
+      } else {
+        debugPrint('[Lazysodium] Keypair generation failed.');
+      }
+      return keyPair;
+    } finally {
+      // Free allocated memory
+      calloc.free(publicKey);
+      calloc.free(secretKey);
     }
-
-    // Free allocated memory
-    calloc.free(publicKey);
-    calloc.free(secretKey);
-
-    return keyPair;
   }
 }
