@@ -1,7 +1,8 @@
 import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:ffi' as ffi;
-import 'package:lazysodium/lazysodium.dart';
+
+import 'package:lazysodium/lazysodium.binding.dart';
 
 extension LazysodiumStreamChaCha20XorExtension on LazysodiumBinding {
   Uint8List cryptoStreamChaCha20Xor(

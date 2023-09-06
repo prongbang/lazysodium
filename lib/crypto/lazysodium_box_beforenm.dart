@@ -3,7 +3,8 @@ import 'dart:ffi';
 
 import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
-import 'package:lazysodium/lazysodium.dart';
+import 'package:lazysodium/kx/lazysodium_kx.dart';
+import 'package:lazysodium/lazysodium.binding.dart';
 
 extension LazysodiumBoxBeforeNmExtension on LazysodiumBinding {
   Uint8List cryptoBoxBeforeNm(KeyPair keyPair) {

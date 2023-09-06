@@ -2,7 +2,8 @@ import 'dart:ffi' as ffi;
 
 import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
-import 'package:lazysodium/lazysodium.dart';
+import 'package:lazysodium/kx/lazysodium_kx.dart';
+import 'package:lazysodium/lazysodium.binding.dart';
 
 extension LazysodiumBoxExtension on LazysodiumBinding {
   Uint8List cryptoBoxEasy(
