@@ -16,18 +16,18 @@ extension LazysodiumStreamChaCha20XorExtension on LazysodiumBinding {
     final noncePointer = calloc<ffi.Uint8>(nonce.length);
     final keyPointer = calloc<ffi.Uint8>(crypto_stream_chacha20_KEYBYTES);
 
-    // Fill the nonce and key with your values
-    for (var i = 0; i < nonce.length; i++) {
-      noncePointer.elementAt(i).value = nonce[i];
-    }
-    for (var i = 0; i < key.length; i++) {
-      keyPointer.elementAt(i).value = key[i];
-    }
-    for (var i = 0; i < message.length; i++) {
-      plaintextPointer.elementAt(i).value = message[i];
-    }
-
     try {
+      // Fill the nonce and key with your values
+      for (var i = 0; i < nonce.length; i++) {
+        noncePointer.elementAt(i).value = nonce[i];
+      }
+      for (var i = 0; i < key.length; i++) {
+        keyPointer.elementAt(i).value = key[i];
+      }
+      for (var i = 0; i < message.length; i++) {
+        plaintextPointer.elementAt(i).value = message[i];
+      }
+
       // Call crypto_stream_chacha20 to generate the stream
       final result = crypto_stream_chacha20_xor(
         ciphertextPointer.cast<ffi.UnsignedChar>(),

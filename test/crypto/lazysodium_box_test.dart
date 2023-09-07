@@ -7,8 +7,7 @@ void main() {
   late Lazysodium lazysodium;
 
   setUp(() {
-    Lazysodium.init();
-    lazysodium = Lazysodium.instance();
+    lazysodium = Lazysodium();
   });
 
   test('Should return text when encrypt and decrypt success', () {

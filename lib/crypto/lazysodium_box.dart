@@ -1,7 +1,8 @@
 import 'dart:ffi' as ffi;
+import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' as f;
 import 'package:lazysodium/kx/lazysodium_kx.dart';
 import 'package:lazysodium/lazysodium.binding.dart';
 
@@ -18,21 +19,21 @@ extension LazysodiumBoxExtension on LazysodiumBinding {
     final pkPointer = calloc<ffi.Uint8>(crypto_box_PUBLICKEYBYTES);
     final skPointer = calloc<ffi.Uint8>(crypto_box_SECRETKEYBYTES);
 
-    // Fill nonce, publicKey, and secretKey with appropriate values
-    for (var i = 0; i < plaintext.length; i++) {
-      plaintextPointer.elementAt(i).value = plaintext[i];
-    }
-    for (var i = 0; i < nonce.length; i++) {
-      noncePointer.elementAt(i).value = nonce[i];
-    }
-    for (var i = 0; i < keyPair.pk.length; i++) {
-      pkPointer.elementAt(i).value = keyPair.pk[i];
-    }
-    for (var i = 0; i < keyPair.sk.length; i++) {
-      skPointer.elementAt(i).value = keyPair.sk[i];
-    }
-
     try {
+      // Fill nonce, publicKey, and secretKey with appropriate values
+      for (var i = 0; i < plaintext.length; i++) {
+        plaintextPointer.elementAt(i).value = plaintext[i];
+      }
+      for (var i = 0; i < nonce.length; i++) {
+        noncePointer.elementAt(i).value = nonce[i];
+      }
+      for (var i = 0; i < keyPair.pk.length; i++) {
+        pkPointer.elementAt(i).value = keyPair.pk[i];
+      }
+      for (var i = 0; i < keyPair.sk.length; i++) {
+        skPointer.elementAt(i).value = keyPair.sk[i];
+      }
+
       // Call crypto_box_easy to encrypt the message
       final result = crypto_box_easy(
         ciphertextPointer.cast<ffi.UnsignedChar>(),
@@ -48,7 +49,7 @@ extension LazysodiumBoxExtension on LazysodiumBinding {
         // Clone the original list
         return Uint8List.fromList(List.from(ciphertextList));
       } else {
-        debugPrint('[Lazysodium] Crypto box easy failed.');
+        f.debugPrint('[Lazysodium] Crypto box easy failed.');
         return Uint8List(0);
       }
     } finally {
@@ -73,21 +74,21 @@ extension LazysodiumBoxExtension on LazysodiumBinding {
     final pkPointer = calloc<ffi.Uint8>(crypto_box_PUBLICKEYBYTES);
     final skPointer = calloc<ffi.Uint8>(crypto_box_SECRETKEYBYTES);
 
-    // Fill the nonce and key with your values
-    for (var i = 0; i < ciphertext.length; i++) {
-      ciphertextPointer.elementAt(i).value = ciphertext[i];
-    }
-    for (var i = 0; i < nonce.length; i++) {
-      noncePointer.elementAt(i).value = nonce[i];
-    }
-    for (var i = 0; i < keyPair.pk.length; i++) {
-      pkPointer.elementAt(i).value = keyPair.pk[i];
-    }
-    for (var i = 0; i < keyPair.sk.length; i++) {
-      skPointer.elementAt(i).value = keyPair.sk[i];
-    }
-
     try {
+      // Fill the nonce and key with your values
+      for (var i = 0; i < ciphertext.length; i++) {
+        ciphertextPointer.elementAt(i).value = ciphertext[i];
+      }
+      for (var i = 0; i < nonce.length; i++) {
+        noncePointer.elementAt(i).value = nonce[i];
+      }
+      for (var i = 0; i < keyPair.pk.length; i++) {
+        pkPointer.elementAt(i).value = keyPair.pk[i];
+      }
+      for (var i = 0; i < keyPair.sk.length; i++) {
+        skPointer.elementAt(i).value = keyPair.sk[i];
+      }
+
       // Call crypto_box_open_easy to decrypt the message
       final result = crypto_box_open_easy(
         plaintextPointer.cast<ffi.UnsignedChar>(),
@@ -104,7 +105,7 @@ extension LazysodiumBoxExtension on LazysodiumBinding {
         // Clone the original list
         return Uint8List.fromList(List.from(decryptedMessageList));
       } else {
-        debugPrint('[Lazysodium] Crypto box open easy failed.');
+        f.debugPrint('[Lazysodium] Crypto box open easy failed.');
         return Uint8List(0);
       }
     } finally {

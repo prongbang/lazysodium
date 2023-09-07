@@ -5,8 +5,7 @@ void main() {
   late Lazysodium lazysodium;
 
   setUp(() {
-    Lazysodium.init();
-    lazysodium = Lazysodium.instance();
+    lazysodium = Lazysodium();
   });
 
   test('Should return nonce size when get nonce size success', () {

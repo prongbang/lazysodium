@@ -4,13 +4,14 @@ import 'package:lazysodium/lazysodium.loader.dart';
 export 'lazysodium.binding.dart';
 export 'lazysodium_extensions.dart';
 export 'kx/lazysodium_kx.dart';
+export 'helper/lazysodium_helper.dart';
 export 'crypto/lazysodium_box_beforenm.dart';
 export 'crypto/lazysodium_box.dart';
 export 'crypto/lazysodium_secret_box.dart';
 export 'crypto/lazysodium_stream_chacha20_xor.dart';
 
 class Lazysodium extends LazysodiumBinding {
-  Lazysodium(super.dynamicLibrary);
+  Lazysodium() : super(libsodium);
 
   static void init() {
     final sodium = Lazysodium.instance();
@@ -19,5 +20,5 @@ class Lazysodium extends LazysodiumBinding {
     }
   }
 
-  factory Lazysodium.instance() => Lazysodium(lazysodium);
+  factory Lazysodium.instance() => Lazysodium();
 }

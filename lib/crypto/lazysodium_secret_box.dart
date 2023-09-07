@@ -66,18 +66,18 @@ extension LazysodiumSecretBoxExtension on LazysodiumBinding {
     final noncePointer = calloc<ffi.Uint8>(crypto_secretbox_NONCEBYTES);
     final sharedKeyPointer = calloc<ffi.Uint8>(crypto_secretbox_KEYBYTES);
 
-    // Fill nonce and secretKey with appropriate values
-    for (var i = 0; i < plaintext.length; i++) {
-      plaintextPointer.elementAt(i).value = plaintext[i];
-    }
-    for (var i = 0; i < nonce.length; i++) {
-      noncePointer.elementAt(i).value = nonce[i];
-    }
-    for (var i = 0; i < sharedKey.length; i++) {
-      sharedKeyPointer.elementAt(i).value = sharedKey[i];
-    }
-
     try {
+      // Fill nonce and secretKey with appropriate values
+      for (var i = 0; i < plaintext.length; i++) {
+        plaintextPointer.elementAt(i).value = plaintext[i];
+      }
+      for (var i = 0; i < nonce.length; i++) {
+        noncePointer.elementAt(i).value = nonce[i];
+      }
+      for (var i = 0; i < sharedKey.length; i++) {
+        sharedKeyPointer.elementAt(i).value = sharedKey[i];
+      }
+
       // Call crypto_secretbox_easy to encrypt the message
       final result = crypto_secretbox_easy(
         ciphertextPointer.cast<ffi.UnsignedChar>(),

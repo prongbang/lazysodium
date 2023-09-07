@@ -1,3 +1,8 @@
+## 1.0.3
+
+- Improve function randomBytesBuf
+- Move logic fill data to try block
+
 ## 1.0.2
 
 * Adding a high-level function

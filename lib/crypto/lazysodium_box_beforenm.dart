@@ -13,15 +13,15 @@ extension LazysodiumBoxBeforeNmExtension on LazysodiumBinding {
     final publicKey = calloc<ffi.Uint8>(crypto_box_PUBLICKEYBYTES);
     final secretKey = calloc<ffi.Uint8>(crypto_box_SECRETKEYBYTES);
 
-    // Fill publicKey and secretKey with your values
-    for (var i = 0; i < crypto_box_PUBLICKEYBYTES; i++) {
-      publicKey.elementAt(i).value = keyPair.pk[i];
-    }
-    for (var i = 0; i < crypto_box_SECRETKEYBYTES; i++) {
-      secretKey.elementAt(i).value = keyPair.sk[i];
-    }
-
     try {
+      // Fill publicKey and secretKey with your values
+      for (var i = 0; i < crypto_box_PUBLICKEYBYTES; i++) {
+        publicKey.elementAt(i).value = keyPair.pk[i];
+      }
+      for (var i = 0; i < crypto_box_SECRETKEYBYTES; i++) {
+        secretKey.elementAt(i).value = keyPair.sk[i];
+      }
+
       // Call crypto_box_beforenm to compute the shared secret key
       final result = crypto_box_beforenm(
         sharedSecretKey.cast<ffi.UnsignedChar>(),

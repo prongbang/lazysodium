@@ -1,7 +1,7 @@
 import 'dart:ffi';
 import 'dart:io';
 
-final DynamicLibrary lazysodium = _load();
+final DynamicLibrary libsodium = _load();
 
 DynamicLibrary _load() {
   if (Platform.isAndroid) {
