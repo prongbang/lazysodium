@@ -89,7 +89,9 @@ class _MyAppState extends State<MyApp> {
 
   void _processCallAPI({int round = 10}) async {
     final dio = GetIt.I.get<Dio>();
-    _responseList.clear();
+    setState(() {
+      _responseList.clear();
+    });
 
     for (int i = 0; i < round; i++) {
       final response = await dio.post('/post', data: <String, dynamic>{
