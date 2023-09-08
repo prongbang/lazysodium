@@ -28,6 +28,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  bool _loading = false;
   final _responseList = [];
 
   @override
@@ -56,7 +57,9 @@ class _MyAppState extends State<MyApp> {
                 ),
               ],
             ),
-            Text('Response:'),
+            const Text('Response:'),
+            const SizedBox(height: 16),
+            if (_loading) const CircularProgressIndicator(),
             Expanded(
               child: ListView.builder(
                 itemCount: _responseList.length,
@@ -90,6 +93,7 @@ class _MyAppState extends State<MyApp> {
   void _processCallAPI({int round = 10}) async {
     final dio = GetIt.I.get<Dio>();
     setState(() {
+      _loading = true;
       _responseList.clear();
     });
 
@@ -104,6 +108,8 @@ class _MyAppState extends State<MyApp> {
       final resp = jsonEncode(data);
       _responseList.add(resp);
     }
-    setState(() {});
+    setState(() {
+      _loading = false;
+    });
   }
 }
